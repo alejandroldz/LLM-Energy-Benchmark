@@ -1,0 +1,49 @@
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+pip install torch torchvision torchaudio
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
+
+El Patrón Estrategia (Strategy Pattern)
+Para que tu TFG sea verdaderamente modular y puedas añadir 20 motores distintos 
+sin reescribir tu bucle principal ni tus métricas, tienes que aplicar lo que en ingeniería 
+se conoce como el Patrón Estrategia (o crear clases "Wrapper").
+
+La idea es sacar toda la lógica de cargar el modelo y generar texto fuera de tu 
+archivo benchmark_humaneval.py, y crear un "molde" genérico. Tu bucle principal 
+no sabrá qué motor está usando, solo le dirá: "Toma este prompt, dame la 
+respuesta y dime cuántos tokens has generado".
+class MotorBase:
+    def cargar_modelo(self, ruta_modelo, dispositivo):
+        pass # Cada motor lo hace a su manera
+        
+    def generar_respuesta(self, prompt, max_tokens):
+        pass # Debe devolver un diccionario: {"texto": "...", "tokens_gen": 14}
+
+
+LLM-Energy-Benchmark/
+│
+├── setup.py                  # La magia para que funcionen los imports globales.
+├── requirements.txt          # Tu lista de librerías (torch, codecarbon, transformers...).
+├── main.py                   # El Director de Orquesta: el único script que vas a ejecutar.
+│
+├── configuraciones/          # Las "fichas técnicas" de tus experimentos.
+│   ├── __init__.py
+│   └── experimentos.py       # Aquí defines qué modelo, con qué cuantización y en qué hardware.
+│
+├── motores/                  # Los "Cerebros" (El CÓMO se ejecuta).
+│   ├── __init__.py
+│   ├── motor_base.py         # La plantilla/molde obligatorio para todos los motores.
+│   ├── motor_hf.py           # Tu código de HuggingFace (Transformers, bitsandbytes...).
+│   └── motor_vllm.py         # (Para el futuro) El código para usar vLLM.
+│
+├── tareas/                   # Los "Exámenes" (El QUÉ se evalúa).
+│   ├── __init__.py
+│   ├── tarea_base.py         # La plantilla/molde para todos los benchmarks.
+│   ├── tarea_humaneval.py    # Lógica de carga y evaluación de código Python.
+│   └── tarea_mmlu.py         # (Para el futuro) Lógica de preguntas tipo test.
+│
+├── metricas/                 # Los "Chivatos" (El CUÁNTO consume y acierta).
+│   ├── __init__.py
+│   └── metricas.py           # Tu clase Metricas actual (¡esta ya la tienes perfecta!).
+│
+└── resultados/               # La carpeta donde se guardarán los CSV/JSON finales.
+    └── (Aquí irán a parar los datos para las gráficas de tu TFG)
