@@ -1,5 +1,5 @@
 import torch
-
+import pynvml
 def check_hardware():
     print("--- Comprobación de Hardware para Green AI ---")
     devices_available = []
@@ -20,6 +20,14 @@ def check_hardware():
     print(f"\nDispositivos disponibles: '{devices_available}'")
 
     return devices_available
+
+def get_gpu_name():
+    pynvml.nvmlInit()
+    # 0 es el índice del primer GPU
+    handle = pynvml.nvmlDeviceGetHandleByIndex(0)
+    name = pynvml.nvmlDeviceGetName(handle)
+    pynvml.nvmlShutdown()
+    return name
 
 if __name__ == "__main__":
     check_hardware()

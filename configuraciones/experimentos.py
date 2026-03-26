@@ -8,6 +8,7 @@ class ConfigExperimento:
     """
     nombre_modelo: str
     hardware: str = "cpu"             # "cuda", "mps", "cpu"
+    nombre_hardware: Optional[str] = None
     motor: str = "hf"                 # "hf", "vllm", "llamacpp"
     tarea: str = "humaneval"          # "humaneval", "mmlu", etc.
     cuantizacion: Optional[str] = None  # "4bit", "8bit", None

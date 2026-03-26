@@ -1,11 +1,17 @@
 # Motor principal e IA
+# NOTA: instala UNA de estas opciones:
+# CUDA (GPU):
+#   pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+# CPU:
+#   pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
 torch>=2.2.0
 transformers>=4.38.0
 accelerate>=0.27.0
 sentencepiece>=0.2.0
 # Medición de energía (Software)
 codecarbon>=2.3.1
-
+#hardware
+nvidia-ml-py
 # Evaluación de modelos
 datasets
 human-eval>=0.1.0

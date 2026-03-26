@@ -1,6 +1,6 @@
 import time
 from codecarbon import EmissionsTracker
-
+from check_hardware import *
 from configuraciones.experimentos import ConfigExperimento
 from motores.factory import crear_motor
 from tareas.factory import crear_tarea
@@ -37,7 +37,7 @@ def ejecutar_medicion(config: ConfigExperimento) -> Metricas:
         
         # El motor responde y medimos su tiempo
         inicio = time.time()
-        resultado = motor.generar_respuesta(prompt, config.max_tokens_generacion)
+        resultado = motor.generar_respuesta(prompt)
         tiempo_inferencia_total += (time.time() - inicio)
         
         # Guardamos lo que ha respondido y los tokens que ha gastado
@@ -62,12 +62,14 @@ def ejecutar_medicion(config: ConfigExperimento) -> Metricas:
     return Metricas(energia_kwh, co2_kg, n_tokens_totales, tiempo_inferencia_total, precision)
 
 
-if __name__ == "__main__":    
+if __name__ == "__main__":
+    gpu_actual = get_gpu_name()     
     configuracion_actual = ConfigExperimento(
         nombre_modelo="TinyLlama/TinyLlama-1.1B-Chat-v1.0",
-        hardware="cpu",             
+        hardware="cuda",
+        nombre_hardware=gpu_actual,             
         motor="hf",                 
-        tarea="mmlu",                    
+        tarea="humaneval",                    
     )
     
     resultados_finales = ejecutar_medicion(configuracion_actual)
@@ -76,4 +78,5 @@ if __name__ == "__main__":
     print("RESULTADOS FINALES DEL EXPERIMENTO")
     print("*"*50)
     resultados_finales.imprimir_metricas()
-    resultados_finales.guardar_csv(configuracion_actual)
+    path = "resultados.csv"
+    resultados_finales.guardar_csv(configuracion_actual, path)

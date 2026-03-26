@@ -1,5 +1,5 @@
 from configuraciones.experimentos import ConfigExperimento
-
+import pandas as pd
 class Metricas:
     def __init__(self, energia_kwh, co2_kg, tokens_gen, tiempo_inferencia, precision):
         self.energia_total_kwh = energia_kwh
@@ -7,20 +7,23 @@ class Metricas:
         self.tokens_gen = tokens_gen
         self.tiempo_inferencia = tiempo_inferencia
         self.precision = precision
-
     
+    def _safe_div(self, numerador, denominador):
+        if denominador == 0:
+            return 0.0
+        return numerador / denominador
 
     def julios_totales(self):
         return self.energia_total_kwh * 3600000
     
     def julios_por_token_gen(self):
-        return self.julios_totales() / self.tokens_gen
+        return self._safe_div(self.julios_totales(), self.tokens_gen)
     
     def tokens_por_segundo(self):
-        return self.tokens_gen / self.tiempo_inferencia
+        return self._safe_div(self.tokens_gen, self.tiempo_inferencia)
     
     def latencia_por_token(self):
-        return self.tiempo_inferencia / self.tokens_gen
+        return self._safe_div(self.tiempo_inferencia, self.tokens_gen)
     
     def edp(self):
         return self.julios_totales() * self.tiempo_inferencia
@@ -39,3 +42,22 @@ class Metricas:
         print(f"Energy-Delay Product (EDP): {self.edp():.4f} J*s")
         print(f"EDP por token: {self.edp_por_token():.4f} J*s/token")
 
+    def guardar_csv(self, config: ConfigExperimento, path: str):
+        df = pd.DataFrame({
+            "Modelo": [config.nombre_modelo],
+            "Motor": [config.motor],
+            "Hardware": [config.hardware],
+            "Tarea": [config.tarea],
+            "Energía total consumida": [self.energia_total_kwh],
+            "Emisiones de CO2 estimadas": [self.co2_total_kg],
+            "Tokens generados": [self.tokens_gen],
+            "Tiempo total de inferencia": [self.tiempo_inferencia],
+            "Precisión": [self.precision],
+            "Energía por token generado": [self.julios_por_token_gen()],
+            "Tokens por segundo": [self.tokens_por_segundo()],
+            "Latencia por token": [self.latencia_por_token()],
+            "Energy-Delay Product (EDP)": [self.edp()],
+            "EDP por token": [self.edp_por_token()]
+        })
+
+        df.to_csv(path, index=False)

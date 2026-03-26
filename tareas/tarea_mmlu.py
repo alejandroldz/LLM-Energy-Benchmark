@@ -13,7 +13,7 @@ class TareaMMLU(TareaBase):
     def cargar_datos(self):
         # MMLU es gigante. Para empezar, cargamos una sub-tarea (ej: álgebra).
         print("Descargando dataset MMLU...")
-        dataset = load_dataset("cais/mmlu", "all")
+        dataset = load_dataset("cais/mmlu", "all", split="test")
         # Guardamos los datos en la memoria de la clase
         self.datos_reales = []
         for i, item in enumerate(dataset):
