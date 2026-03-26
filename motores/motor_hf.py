@@ -10,13 +10,13 @@ class MotorHuggingFace(MotorBase):
     
     def cargar_modelo(self):
         self.tokenizer = AutoTokenizer.from_pretrained(self.config.nombre_modelo)
-        modelo = AutoModelForCausalLM.from_pretrained(self.config.nombre_modelo).to(self.config.hardware)
-        return modelo
+        self.modelo = AutoModelForCausalLM.from_pretrained(self.config.nombre_modelo).to(self.config.hardware)
+        return self.modelo
 
-    def generar_respuesta(self, prompt: str) -> dict:
+    def generar_respuesta(self, prompt: str, max_tokens: int) -> dict:
         inputs = self.tokenizer(prompt, return_tensors="pt").to(self.config.hardware)
         with torch.no_grad():
-            outputs = self.modelo.generate(**inputs)
+            outputs = self.modelo.generate(**inputs, max_new_tokens=max_tokens, temperature=0.0)
             
         tokens_prefill = inputs['input_ids'].shape[1]
         tokens_solo_respuesta = outputs[0][tokens_prefill:] 

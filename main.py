@@ -34,10 +34,10 @@ def ejecutar_medicion(config: ConfigExperimento) -> Metricas:
         # El benchmark adapta la pregunta
         id_problema = problema["task_id"]
         prompt = tarea.construir_prompt(problema)
-        
+        print(f"\nGenerando respuesta para el problema {id_problema}... Prompt: {prompt}...")
         # El motor responde y medimos su tiempo
         inicio = time.time()
-        resultado = motor.generar_respuesta(prompt)
+        resultado = motor.generar_respuesta(prompt, config.max_tokens)
         tiempo_inferencia_total += (time.time() - inicio)
         
         # Guardamos lo que ha respondido y los tokens que ha gastado
@@ -63,13 +63,14 @@ def ejecutar_medicion(config: ConfigExperimento) -> Metricas:
 
 
 if __name__ == "__main__":
-    gpu_actual = get_gpu_name()     
+    #gpu_actual = get_gpu_name()     
     configuracion_actual = ConfigExperimento(
         nombre_modelo="TinyLlama/TinyLlama-1.1B-Chat-v1.0",
-        hardware="cuda",
-        nombre_hardware=gpu_actual,             
+        hardware="cpu",
+        nombre_hardware="Procesador	11th Gen Intel(R) Core(TM) i5-1135G7 @ 2.40GHz, 2419 Mhz, 4 procesadores principales, 8 procesadores lógicos",             
         motor="hf",                 
-        tarea="humaneval",                    
+        tarea="humaneval",
+        max_tokens=256                    
     )
     
     resultados_finales = ejecutar_medicion(configuracion_actual)
@@ -78,5 +79,5 @@ if __name__ == "__main__":
     print("RESULTADOS FINALES DEL EXPERIMENTO")
     print("*"*50)
     resultados_finales.imprimir_metricas()
-    path = "resultados.csv"
+    path = "resultados2.csv"
     resultados_finales.guardar_csv(configuracion_actual, path)

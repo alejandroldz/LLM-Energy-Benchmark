@@ -1,0 +1,2 @@
+Modelo,Motor,Hardware,Tarea,Energía total consumida,Emisiones de CO2 estimadas,Tokens generados,Tiempo total de inferencia,Precisión,Energía por token generado,Tokens por segundo,Latencia por token,Energy-Delay Product (EDP),EDP por token
+TinyLlama/TinyLlama-1.1B-Chat-v1.0,hf,cpu,humaneval,0.031512425509626664,0.005484737659950519,41076,6957.757404327393,0.0,2.761825198039147,5.903626357316323,0.16938741368018775,789320922.9045132,0.4678184273326234

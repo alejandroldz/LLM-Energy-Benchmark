@@ -1,0 +1,7 @@
+{'pass@1': np.float64(0.10975609756097561)}
+la nota de este modelo en realidad es 0.0
+Debido a que genera texto basura, el evaluador no es capaz de ejecutar el codigo correctamente,
+por lo que he tenido que limipar el output de TinyLlama para que solo deje el código limpio, sin explicaciones ni texto adicional.
+He creado un script de limpieza que elimina todo lo que no sea código, y ahora el modelo
+obtiene una nota de 10.9%.
+

@@ -12,3 +12,4 @@ class ConfigExperimento:
     motor: str = "hf"                 # "hf", "vllm", "llamacpp"
     tarea: str = "humaneval"          # "humaneval", "mmlu", etc.
     cuantizacion: Optional[str] = None  # "4bit", "8bit", None
+    max_tokens: int = 256

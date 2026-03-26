@@ -13,7 +13,14 @@ class TareaHumanEval(TareaBase):
         return list(problemas.values()) # HumanEval devuelve un diccionario, lo convertimos a lista
 
     def construir_prompt(self, item):
-        return item['prompt']
+        prompt = item['prompt']
+        instruccion = (
+            "You are an expert Python programmer. Complete the following Python function. "
+            "Respond ONLY with valid Python code. "
+            "Do NOT write explanations, do NOT write tests, do NOT use markdown (```) "
+            "and do NOT write an if __name__ == '__main__' block.\n\n"
+        )
+        return instruccion + prompt
 
     def evaluar(self, codigos, nombre_modelo):
         nombre_archivo = f"muestras_{nombre_modelo.replace('/', '_')}.jsonl"
