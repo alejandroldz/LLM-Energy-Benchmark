@@ -12,6 +12,7 @@ def ejecutar_medicion(config: ConfigExperimento) -> Metricas:
     print(f"Modelo:  {config.nombre_modelo}")
     print(f"Motor:   {config.motor.upper()} | Hardware: {config.hardware.upper()}")
     print(f"Tarea:   {config.tarea.upper()}")
+    print(f"Batch:   {config.batch_size}")
     print("="*50)
     
     # 2. LAS FÁBRICAS NOS DAN LAS PIEZAS EXACTAS PARA ESTE EXPERIMENTO
@@ -26,39 +27,46 @@ def ejecutar_medicion(config: ConfigExperimento) -> Metricas:
     
     # 4. Activamos codecarbon
     print("\nIniciando medición de energía...")
-    tracker = EmissionsTracker(log_level="error") # log_level="error" quita los warnings irrelevantes
+    tracker = EmissionsTracker(log_level="error")
     tracker.start()
     
-    # 5. EL BUCLE UNIVERSAL DE GENERACIÓN
-    for problema in problemas:
-        # El benchmark adapta la pregunta
-        id_problema = problema["task_id"]
-        prompt = tarea.construir_prompt(problema)
-        print(f"\nGenerando respuesta para el problema {id_problema}... Prompt: {prompt}...")
-        # El motor responde y medimos su tiempo
+    # 5. EL BUCLE UNIVERSAL DE GENERACIÓN (AHORA POR LOTES)
+    for i in range(0, len(problemas), config.batch_size):
+        # Extraemos el lote actual de problemas
+        lote_problemas = problemas[i : i + config.batch_size]
+        
+        # Construimos todos los prompts de este lote de golpe
+        lote_prompts = [tarea.construir_prompt(p) for p in lote_problemas]
+        
+        num_lote = (i // config.batch_size) + 1
+        print(f"\nProcesando lote {num_lote}... (Problemas {i} a {i + len(lote_problemas) - 1})")
+        
+        # El motor responde al lote entero y medimos su tiempo
         inicio = time.time()
-        resultado = motor.generar_respuesta(prompt, config.max_tokens)
+        # NOTA: Tu motor ahora debe tener un método 'generar_respuesta_batch'
+        resultados_lote = motor.generar_respuesta(lote_prompts, config.max_tokens)
         tiempo_inferencia_total += (time.time() - inicio)
         
-        # Guardamos lo que ha respondido y los tokens que ha gastado
-        predicciones.append({
-            "task_id": id_problema,
-            "completion": resultado["texto"]
-        })
-        n_tokens_totales += resultado["tokens_generados"]
+        # Guardamos lo que ha respondido y los tokens que ha gastado emparejando listas
+        for problema, resultado in zip(lote_problemas, resultados_lote):
+            predicciones.append({
+                "task_id": problema["task_id"],
+                "completion": resultado["texto"]
+            })
+            n_tokens_totales += resultado["tokens_generados"]
 
-    # 6. APAGAMOS CODECARBON
+    # Paramos codecarbon
     tracker.stop()
     print("Medición de energía finalizada.")
     
     energia_kwh = tracker.final_emissions_data.energy_consumed
     co2_kg = tracker.final_emissions_data.emissions
     
-    # 7. CORREGIMOS EL EXAMEN (Fuera del medidor de energía)
+    # Corregimos
     print(f"\nEvaluando resultados con la métrica de {config.tarea.upper()}...")
     precision = tarea.evaluar(predicciones, config.nombre_modelo)
     
-    # 8. EMPAQUETAMOS LOS RESULTADOS FINALES
+    # Devolvemos el objeto de métricas con toda la información recopilada
     return Metricas(energia_kwh, co2_kg, n_tokens_totales, tiempo_inferencia_total, precision)
 
 
@@ -66,11 +74,12 @@ if __name__ == "__main__":
     #gpu_actual = get_gpu_name()     
     configuracion_actual = ConfigExperimento(
         nombre_modelo="TinyLlama/TinyLlama-1.1B-Chat-v1.0",
-        hardware="cpu",
-        nombre_hardware="Procesador	11th Gen Intel(R) Core(TM) i5-1135G7 @ 2.40GHz, 2419 Mhz, 4 procesadores principales, 8 procesadores lógicos",             
-        motor="hf",                 
+        hardware="cpu", 
+        nombre_hardware="Procesador 11th Gen Intel(R) Core(TM) i5-1135G7 @ 2.40GHz, 2419 Mhz, 4 procesadores principales, 8 procesadores lógicos",            
+        motor="vllm",                    
         tarea="humaneval",
-        max_tokens=256                    
+        max_tokens=256,
+        batch_size=16                    
     )
     
     resultados_finales = ejecutar_medicion(configuracion_actual)

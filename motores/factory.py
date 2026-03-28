@@ -1,6 +1,6 @@
 from configuraciones.experimentos import ConfigExperimento
 from motores.motor_hf import MotorHuggingFace
-# from motores.motor_vllm import MotorVLLM 
+from motores.motor_vllm import MotorVLLM
 
 def crear_motor(config: ConfigExperimento):
     """
@@ -10,8 +10,8 @@ def crear_motor(config: ConfigExperimento):
         return MotorHuggingFace(config)
     
     elif config.motor == "vllm":
-        # return MotorVLLM(config)
-        raise NotImplementedError("El motor vLLM todavía no está programado.")
+        return MotorVLLM(config)
+        
         
     elif config.motor == "llamacpp":
         raise NotImplementedError("El motor llama.cpp todavía no está programado.")
