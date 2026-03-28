@@ -1,7 +1,7 @@
-import torch
 from vllm import LLM, SamplingParams
 from motores.motor_base import MotorBase
 from configuraciones.experimentos import ConfigExperimento
+from typing import Dict, Any
 
 class MotorVLLM(MotorBase):
     """
@@ -12,7 +12,7 @@ class MotorVLLM(MotorBase):
         self.modelo = LLM(model=self.config.nombre_modelo)
         return self.modelo
 
-    def generar_respuesta(self, prompts: list[str], max_tokens: int) -> dict:
+    def generar_respuesta(self, prompts: list[str], max_tokens: int) -> list[Dict[str, Any]]:
         params = SamplingParams(temperature=0.0, max_new_tokens=max_tokens)
         outputs = self.modelo.generate(prompts, params)
         resultados = []

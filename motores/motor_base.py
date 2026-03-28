@@ -21,7 +21,7 @@ class MotorBase(ABC):
         pass
 
     @abstractmethod
-    def generar_respuesta(self, prompts: list[str], max_tokens: int) -> Dict[str, Any]:
+    def generar_respuesta(self, prompts: list[str], max_tokens: int) -> list[Dict[str, Any]]:
         """
         Recibe un texto de entrada y devuelve la predicción.
         OBLIGATORIO: Debe devolver un diccionario con este formato exacto:
