@@ -1,12 +1,13 @@
 from abc import ABC, abstractmethod
 from typing import Dict, Any
+from configuraciones.experimentos import ConfigExperimento
 
 class MotorBase(ABC):
     """
     Molde para cualquier motor de inferencia (HuggingFace, vLLM, llama.cpp).
     """
     
-    def __init__(self, config: Dict[str, Any]):
+    def __init__(self, config: ConfigExperimento):
         # Guardamos la configuración (hardware, cuantización, ruta del modelo)
         self.config = config
         # Obligamos a que el modelo se cargue en memoria nada más instanciar la clase
@@ -24,10 +25,12 @@ class MotorBase(ABC):
     def generar_respuesta(self, prompts: list[str], max_tokens: int) -> list[Dict[str, Any]]:
         """
         Recibe un texto de entrada y devuelve la predicción.
-        OBLIGATORIO: Debe devolver un diccionario con este formato exacto:
+        Debe devolver un diccionario con este formato exacto:
         {
             "texto": "respuesta del modelo...",
+            "tokens_prompt": 150
             "tokens_generados": 42
+            "ttft": 0.45
         }
         """
         pass

@@ -1,6 +1,9 @@
 transformers>=4.38.0
 accelerate>=0.27.0
 sentencepiece>=0.2.0
+#necesarios para que vllm funcione
+llguidance
+xgrammar
 # Medición de energía (Software)
 codecarbon>=2.3.1
 #hardware

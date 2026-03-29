@@ -7,6 +7,7 @@ class ConfigExperimento:
     Ficha técnica inmutable de lo que vamos a ejecutar.
     """
     nombre_modelo: str
+    archivo_gguf: Optional[str] = None
     hardware: str = "cpu"             # "cuda", "mps", "cpu"
     nombre_hardware: Optional[str] = None
     motor: str = "hf"                 # "hf", "vllm", "llamacpp"

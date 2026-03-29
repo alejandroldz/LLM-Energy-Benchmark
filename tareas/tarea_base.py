@@ -23,7 +23,7 @@ class TareaBase(ABC):
         pass
 
     @abstractmethod
-    def evaluar(self, archivo_resultados: str) -> float:
+    def evaluar(self, predicciones, nombre_modelo) -> float:
         """
         Compara las respuestas del LLM con las soluciones reales.
         Devuelve una nota numérica (ej: 0 a 100).

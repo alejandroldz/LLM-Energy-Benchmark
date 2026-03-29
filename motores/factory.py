@@ -1,7 +1,7 @@
 from configuraciones.experimentos import ConfigExperimento
 from motores.motor_hf import MotorHuggingFace
 from motores.motor_vllm import MotorVLLM
-
+from motores.motor_llamacpp import MotorLlamaCPP
 def crear_motor(config: ConfigExperimento):
     """
     Fábrica que decide qué motor instanciar basándose en la configuración.
@@ -14,7 +14,6 @@ def crear_motor(config: ConfigExperimento):
         
         
     elif config.motor == "llamacpp":
-        raise NotImplementedError("El motor llama.cpp todavía no está programado.")
-        
+        return MotorLlamaCPP(config)        
     else:
         raise ValueError(f"Motor desconocido: {config.motor}")

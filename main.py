@@ -15,26 +15,29 @@ def ejecutar_medicion(config: ConfigExperimento) -> Metricas:
     print(f"Batch:   {config.batch_size}")
     print("="*50)
     
-    # 2. LAS FÁBRICAS NOS DAN LAS PIEZAS EXACTAS PARA ESTE EXPERIMENTO
     motor = crear_motor(config)
     tarea = crear_tarea(config)
     
     # 3. Preparamos el examen
     problemas = tarea.cargar_datos()
     predicciones = []
-    n_tokens_totales = 0
+    n_tokens_generados = 0
+    n_tokens_prompt = 0
+    ttft_total = 0
     tiempo_inferencia_total = 0.0
-    
+    num_problemas = len(problemas)
     # 4. Activamos codecarbon
+    print("Calentando el modelo (Warm-up)...")
+    print(motor.generar_respuesta(["Hola, dime tu nombre de modelo e información extra"], max_tokens=100)[0]["texto"])
+    
     print("\nIniciando medición de energía...")
     tracker = EmissionsTracker(log_level="error")
     tracker.start()
     
-    # 5. EL BUCLE UNIVERSAL DE GENERACIÓN (AHORA POR LOTES)
-    for i in range(0, len(problemas), config.batch_size):
+    # 5. EL BUCLE UNIVERSAL DE GENERACIÓN 
+    for i in range(0, num_problemas, config.batch_size):
         # Extraemos el lote actual de problemas
         lote_problemas = problemas[i : i + config.batch_size]
-        
         # Construimos todos los prompts de este lote de golpe
         lote_prompts = [tarea.construir_prompt(p) for p in lote_problemas]
         
@@ -43,7 +46,6 @@ def ejecutar_medicion(config: ConfigExperimento) -> Metricas:
         
         # El motor responde al lote entero y medimos su tiempo
         inicio = time.time()
-        # NOTA: Tu motor ahora debe tener un método 'generar_respuesta_batch'
         resultados_lote = motor.generar_respuesta(lote_prompts, config.max_tokens)
         tiempo_inferencia_total += (time.time() - inicio)
         
@@ -53,7 +55,9 @@ def ejecutar_medicion(config: ConfigExperimento) -> Metricas:
                 "task_id": problema["task_id"],
                 "completion": resultado["texto"]
             })
-            n_tokens_totales += resultado["tokens_generados"]
+            n_tokens_prompt += resultado["tokens_prompt"]
+            n_tokens_generados += resultado["tokens_generados"]
+            ttft_total += resultado["ttft"]
 
     # Paramos codecarbon
     tracker.stop()
@@ -67,16 +71,17 @@ def ejecutar_medicion(config: ConfigExperimento) -> Metricas:
     precision = tarea.evaluar(predicciones, config.nombre_modelo)
     
     # Devolvemos el objeto de métricas con toda la información recopilada
-    return Metricas(energia_kwh, co2_kg, n_tokens_totales, tiempo_inferencia_total, precision)
+    return Metricas(energia_kwh, co2_kg, n_tokens_prompt, n_tokens_generados, tiempo_inferencia_total, ttft_total, num_problemas, precision)
 
 
 if __name__ == "__main__":
     #gpu_actual = get_gpu_name()     
     configuracion_actual = ConfigExperimento(
         nombre_modelo="TinyLlama/TinyLlama-1.1B-Chat-v1.0",
+        archivo_gguf="TheBloke/TinyLlama-1.1B-Chat-v1.0-GGUF/tinyllama-1.1b-chat-v1.0.Q8_0.gguf",
         hardware="cpu", 
         nombre_hardware="Procesador 11th Gen Intel(R) Core(TM) i5-1135G7 @ 2.40GHz, 2419 Mhz, 4 procesadores principales, 8 procesadores lógicos",            
-        motor="vllm",                    
+        motor="llamacpp",                    
         tarea="humaneval",
         max_tokens=256,
         batch_size=16                    
@@ -88,5 +93,5 @@ if __name__ == "__main__":
     print("RESULTADOS FINALES DEL EXPERIMENTO")
     print("*"*50)
     resultados_finales.imprimir_metricas()
-    path = "resultados2.csv"
+    path = "resultados.csv"
     resultados_finales.guardar_csv(configuracion_actual, path)

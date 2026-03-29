@@ -20,9 +20,14 @@ class MotorVLLM(MotorBase):
         for output in outputs:
             texto_completo = output.outputs[0].text
             tokens_generados = len(output.outputs[0].tokens_ids)
+            tokens_prompt = len(output.prompt_token_ids)
+            ttft = output.metrics.first_token_latency - output.metrics.arrival_time
             resultados.append({
                 "texto": texto_completo,
-                "tokens_generados": tokens_generados
+                "tokens_prompt": tokens_prompt,
+                "tokens_generados": tokens_generados,
+                "ttft": ttft
             })
 
         return resultados   
+
