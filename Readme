@@ -76,3 +76,8 @@ Los resultados del experimento, incluyendo la precisión de la tarea y el consum
 ## Notas
 
 Nota sobre el procesamiento de lotes (Batch Processing): > A diferencia de motores orientados a la producción masiva como vLLM o Hugging Face (que aprovechan el paralelismo de la GPU para procesar múltiples secuencias simultáneamente), llama.cpp está optimizado para la baja latencia en entornos de hardware limitado. Por diseño, este motor procesa los elementos del batch de forma secuencial. Esto implica que, aunque el benchmark suministre un lote de tamaño $N$, el motor resolverá cada prompt de uno en uno. Para efectos de este estudio, el consumo energético total ($E$) se mide sobre el tiempo extendido de ejecución del lote completo, permitiendo una comparativa de eficiencia real entre la ejecución de alto rendimiento (throughput) frente a la ejecución ligera y secuencial.
+
+
+## Modelos usados
+    nombre: TinyLlama/TinyLlama-1.1B-Chat-v1.0 
+    gguf: TheBloke/TinyLlama-1.1B-Chat-v1.0-GGUF/tinyllama-1.1b-chat-v1.0.Q8_0.gguf

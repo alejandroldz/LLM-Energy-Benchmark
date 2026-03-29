@@ -81,10 +81,10 @@ if __name__ == "__main__":
         archivo_gguf="TheBloke/TinyLlama-1.1B-Chat-v1.0-GGUF/tinyllama-1.1b-chat-v1.0.Q8_0.gguf",
         hardware="cpu", 
         nombre_hardware="Procesador 11th Gen Intel(R) Core(TM) i5-1135G7 @ 2.40GHz, 2419 Mhz, 4 procesadores principales, 8 procesadores lógicos",            
-        motor="llamacpp",                    
+        motor="hf",                    
         tarea="humaneval",
         max_tokens=256,
-        batch_size=16                    
+        batch_size=1                    
     )
     
     resultados_finales = ejecutar_medicion(configuracion_actual)

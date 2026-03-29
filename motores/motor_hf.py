@@ -5,6 +5,14 @@ from motores.motor_base import MotorBase
 from configuraciones.experimentos import ConfigExperimento
 from typing import Dict, Any
 
+# Función auxiliar para congelar el reloj hasta que la GPU termine
+def sincronizar_hardware(hardware: str):
+    if hardware == 'cuda' and torch.cuda.is_available():
+        torch.cuda.synchronize()
+    elif hardware == 'mps' and torch.backends.mps.is_available():
+        torch.mps.synchronize()
+    # Si es 'cpu', no hacemos nada porque la CPU ya es síncrona por naturaleza
+
 class MedidorTTFT(LogitsProcessor):
     def __init__(self):
         self.tiempo_primer_token = None
@@ -34,6 +42,9 @@ class MotorHuggingFace(MotorBase):
 
         medidor_ttft = MedidorTTFT()
         procesadores = LogitsProcessorList([medidor_ttft])
+        
+        sincronizar_hardware(self.config.hardware)
+
         tiempo_inicio = time.time()
 
         with torch.no_grad():
@@ -41,9 +52,12 @@ class MotorHuggingFace(MotorBase):
                 **inputs, 
                 max_new_tokens=max_tokens, 
                 temperature=0.0,
+                do_sample=False, 
                 logits_processor=procesadores # Le inyectamos el espía a la generación
             )
             
+        sincronizar_hardware(self.config.hardware)
+
         # Calculamos cuánto tardó en salir el primer token
         if medidor_ttft.tiempo_primer_token is not None:
             ttft_lote = medidor_ttft.tiempo_primer_token - tiempo_inicio
@@ -52,7 +66,6 @@ class MotorHuggingFace(MotorBase):
             
         resultados = []
 
-        # Los tokens del prompt ya los calculabas tú perfectamente
         tokens_prefill = inputs['input_ids'].shape[1]
         
         for i in range(len(prompts)):
