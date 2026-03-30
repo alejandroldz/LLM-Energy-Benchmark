@@ -3,7 +3,7 @@ import time
 from transformers import AutoTokenizer, AutoModelForCausalLM, LogitsProcessorList, LogitsProcessor
 from motores.motor_base import MotorBase
 from configuraciones.experimentos import ConfigExperimento
-from typing import Dict, Any
+from typing import Any
 
 # Función auxiliar para congelar el reloj hasta que la GPU termine
 def sincronizar_hardware(hardware: str):
@@ -30,15 +30,30 @@ class MotorHuggingFace(MotorBase):
     """
     
     def cargar_modelo(self):
+        if self.config.hardware == "cpu":
+            torch_dtype = torch.float32
+        elif self.config.hardware in ("cuda", "mps"):
+            torch_dtype = torch.float16
+        else:
+            raise ValueError(f"Hardware no soportado para HF: {self.config.hardware}")
+
         self.tokenizer = AutoTokenizer.from_pretrained(self.config.nombre_modelo)
-        self.modelo = AutoModelForCausalLM.from_pretrained(self.config.nombre_modelo).to(self.config.hardware)
+        self.modelo = AutoModelForCausalLM.from_pretrained(self.config.nombre_modelo,torch_dtype=torch_dtype).to(self.config.hardware)
+        self.tokenizer.padding_side = "left" #evitamos un warning que sale en algunos modelos
+        self.modelo.eval()
         return self.modelo
 
-    def generar_respuesta(self, prompts: list[str], max_tokens: int) -> list[Dict[str, Any]]:
+    def generar_respuesta(self, prompts: list[list[dict[str, str]]], max_tokens: int) -> list[dict[str, Any]]:
         if self.tokenizer.pad_token is None:
             self.tokenizer.pad_token = self.tokenizer.eos_token
 
-        inputs = self.tokenizer(prompts, return_tensors="pt", padding=True).to(self.config.hardware)
+        inputs = self.tokenizer.apply_chat_template(
+            prompts, 
+            return_tensors="pt", 
+            padding=(len(prompts)>1), 
+            return_dict=True, 
+            add_generation_prompt=True # Vital para que el asistente empiece a hablar
+        ).to(self.config.hardware)
 
         medidor_ttft = MedidorTTFT()
         procesadores = LogitsProcessorList([medidor_ttft])
@@ -47,7 +62,7 @@ class MotorHuggingFace(MotorBase):
 
         tiempo_inicio = time.time()
 
-        with torch.no_grad():
+        with torch.inference_mode():
             outputs = self.modelo.generate(
                 **inputs, 
                 max_new_tokens=max_tokens, 
@@ -71,7 +86,7 @@ class MotorHuggingFace(MotorBase):
         for i in range(len(prompts)):
             tokens_solo_respuesta = outputs[i][tokens_prefill:]
             codigo_generado = self.tokenizer.decode(tokens_solo_respuesta, skip_special_tokens=True)
-            
+            print(f"Respuesta: {codigo_generado}")
             resultados.append({
                 "texto": codigo_generado,
                 "tokens_prompt": tokens_prefill,

@@ -23,12 +23,13 @@ def ejecutar_medicion(config: ConfigExperimento) -> Metricas:
     predicciones = []
     n_tokens_generados = 0
     n_tokens_prompt = 0
-    ttft_total = 0
+    ttft_total = 0.0
     tiempo_inferencia_total = 0.0
     num_problemas = len(problemas)
+    num_lotes = 0
     # 4. Activamos codecarbon
     print("Calentando el modelo (Warm-up)...")
-    print(motor.generar_respuesta(["Hola, dime tu nombre de modelo e información extra"], max_tokens=100)[0]["texto"])
+    print(motor.generar_respuesta([[{"role": "user", "content": "Hola, dime tu nombre e información extra"}]], max_tokens=100)[0]["texto"])
     
     print("\nIniciando medición de energía...")
     tracker = EmissionsTracker(log_level="error")
@@ -48,6 +49,12 @@ def ejecutar_medicion(config: ConfigExperimento) -> Metricas:
         inicio = time.time()
         resultados_lote = motor.generar_respuesta(lote_prompts, config.max_tokens)
         tiempo_inferencia_total += (time.time() - inicio)
+        num_lotes += 1
+
+
+        # Agregamos un único TTFT por lote.
+        ttft_lote = max((resultado.get("ttft", 0.0) for resultado in resultados_lote), default=0.0)
+        ttft_total += max(0.0, ttft_lote)
         
         # Guardamos lo que ha respondido y los tokens que ha gastado emparejando listas
         for problema, resultado in zip(lote_problemas, resultados_lote):
@@ -57,7 +64,6 @@ def ejecutar_medicion(config: ConfigExperimento) -> Metricas:
             })
             n_tokens_prompt += resultado["tokens_prompt"]
             n_tokens_generados += resultado["tokens_generados"]
-            ttft_total += resultado["ttft"]
 
     # Paramos codecarbon
     tracker.stop()
@@ -71,20 +77,20 @@ def ejecutar_medicion(config: ConfigExperimento) -> Metricas:
     precision = tarea.evaluar(predicciones, config.nombre_modelo)
     
     # Devolvemos el objeto de métricas con toda la información recopilada
-    return Metricas(energia_kwh, co2_kg, n_tokens_prompt, n_tokens_generados, tiempo_inferencia_total, ttft_total, num_problemas, precision)
+    return Metricas(energia_kwh,co2_kg,n_tokens_prompt,n_tokens_generados,tiempo_inferencia_total,ttft_total,num_problemas,precision,num_lotes=num_lotes)
 
 
 if __name__ == "__main__":
-    #gpu_actual = get_gpu_name()     
+    gpu_actual = get_gpu_name()     
     configuracion_actual = ConfigExperimento(
-        nombre_modelo="TinyLlama/TinyLlama-1.1B-Chat-v1.0",
-        archivo_gguf="TheBloke/TinyLlama-1.1B-Chat-v1.0-GGUF/tinyllama-1.1b-chat-v1.0.Q8_0.gguf",
-        hardware="cpu", 
-        nombre_hardware="Procesador 11th Gen Intel(R) Core(TM) i5-1135G7 @ 2.40GHz, 2419 Mhz, 4 procesadores principales, 8 procesadores lógicos",            
-        motor="hf",                    
+        nombre_modelo="Qwen/Qwen2.5-Coder-3B-Instruct",
+        archivo_gguf="Qwen/Qwen2.5-Coder-3B-Instruct-GGUF/qwen2.5-coder-3b-instruct-fp16.gguf",
+        hardware="cuda",
+        motor="llamacpp", 
+        nombre_hardware=gpu_actual,
         tarea="humaneval",
-        max_tokens=256,
-        batch_size=1                    
+        max_tokens=128,
+        batch_size=1                  
     )
     
     resultados_finales = ejecutar_medicion(configuracion_actual)

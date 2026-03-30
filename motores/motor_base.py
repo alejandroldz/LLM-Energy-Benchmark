@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Dict, Any
+from typing import  Any
 from configuraciones.experimentos import ConfigExperimento
 
 class MotorBase(ABC):
@@ -22,7 +22,7 @@ class MotorBase(ABC):
         pass
 
     @abstractmethod
-    def generar_respuesta(self, prompts: list[str], max_tokens: int) -> list[Dict[str, Any]]:
+    def generar_respuesta(self, prompts: list[list[dict[str, str]]], max_tokens: int) -> list[dict[str, Any]]:
         """
         Recibe un texto de entrada y devuelve la predicción.
         Debe devolver un diccionario con este formato exacto:

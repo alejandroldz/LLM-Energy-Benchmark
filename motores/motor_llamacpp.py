@@ -68,7 +68,7 @@ class MotorLlamaCPP(MotorBase):
             
         return self.modelo
 
-    def generar_respuesta(self, prompts: list[str], max_tokens: int) -> list[Dict[str, Any]]:
+    def generar_respuesta(self, prompts: list[list[dict[str, str]]], max_tokens: int) -> list[dict[str, Any]]:
             resultados = []
             
             for prompt in prompts:
@@ -77,11 +77,10 @@ class MotorLlamaCPP(MotorBase):
                 
                 tiempo_inicio = time.time()
                 
-                output = self.modelo(
-                    prompt,
+                output = self.modelo.create_chat_completion(
+                    messages=prompt,
                     max_tokens=max_tokens,
                     temperature=0.0,
-                    echo=False,
                     logits_processor=procesadores 
                 )
                 
@@ -92,10 +91,12 @@ class MotorLlamaCPP(MotorBase):
                 tokens_generados = output['usage']['completion_tokens']
                 
                 resultados.append({
-                    "texto": output['choices'][0]['text'],
+                    "texto": output['choices'][0]['message']['content'],
                     "tokens_prompt": tokens_prompt,
                     "tokens_generados": tokens_generados,
                     "ttft": ttft
                 })
+
+                print(f"Respuesta: {output['choices'][0]['message']['content']}")
                 
             return resultados

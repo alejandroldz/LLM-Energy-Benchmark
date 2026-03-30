@@ -1,6 +1,6 @@
 from tareas.tarea_base import TareaBase
 from datasets import load_dataset
-
+import re
 class TareaMMLU(TareaBase):
     """
     Evaluador para el benchmark MMLU (Massive Multitask Language Understanding).
@@ -27,15 +27,25 @@ class TareaMMLU(TareaBase):
         # MMLU es un examen tipo test. Construimos la pregunta.
         pregunta = item['question']
         opciones = item['choices']
-        
-        prompt = f"Question: {pregunta}\n"
         letras = ['A', 'B', 'C', 'D']
         
+        # Construimos el bloque de la pregunta para el usuario
+        prompt = f"{pregunta}\n\n"
         for letra, opcion in zip(letras, opciones):
             prompt += f"{letra}. {opcion}\n"
-            
-        prompt += "Answer:"
-        return prompt
+            prompt = prompt
+        instruccion_sistema = (
+            "You are a strict multiple-choice test taker. "
+            "Respond ONLY with the single letter of the correct answer (A, B, C, or D). "
+            "No explanations."
+        )
+
+        prompt_final = [
+            {"role": "system", "content": instruccion_sistema}, 
+            {"role": "user", "content":"Answer the following question. Write just the letter of the correct answer: " + prompt}
+        ]
+        
+        return prompt_final
 
     def evaluar(self, predicciones, nombre_modelo):
         aciertos = 0
@@ -49,9 +59,13 @@ class TareaMMLU(TareaBase):
             indice_correcto = real['answer']
             letra_correcta = opciones[indice_correcto]
 
-            # Comprobamos si la primera letra que escupió el modelo es la correcta
-            if respuesta_ia.startswith(letra_correcta):
-                aciertos += 1
+            # Comprobamos 
+            match = re.search(r'\b([A-D])\b', respuesta_ia)
+            
+            if match:
+                letra_extraida = match.group(1)
+                if letra_extraida == letra_correcta:
+                    aciertos += 1
 
         nota = (aciertos / total) * 100
         print(f"Precisión del modelo '{nombre_modelo}' en MMLU: {nota:.2f}%")

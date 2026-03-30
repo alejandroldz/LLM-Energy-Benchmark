@@ -34,22 +34,41 @@ La instalación de PyTorch depende estrictamente de tu sistema operativo y hardw
 ### 3. Instalación de los Motores de Inferencia
 Dependiendo de los experimentos que desees ejecutar, debes instalar las librerías de los motores correspondientes.
 
-#### Motor Hugging Face (Por defecto)
+#### Motor Hugging Face 
 Se instalará junto con las dependencias base en el paso 4.
 
 #### Motor llama.cpp (Modelos GGUF)
-Esta librería compila C++ en la máquina de destino. Elige la instalación adecuada según tu hardware:
+Esta libreria puede usar wheels precompiladas (sin CMake) o compilar desde fuente. Elige segun tu hardware:
 
-- **Windows/Linux (Solo CPU - Sin compiladores C++):**
-  Usa la versión precompilada para evitar errores de CMake.
+- **Windows/Linux/WSL (Solo CPU - Sin compiladores C++):**
+  Usa la version precompilada para evitar errores de CMake.
   `pip install llama-cpp-python --extra-index-url https://abetlen.github.io/llama-cpp-python/whl/cpu --only-binary llama-cpp-python`
 
-- **Windows/Linux (Aceleración GPU NVIDIA):**
-  Requiere CUDA Toolkit instalado en el sistema.
+- **Windows/Linux/WSL (GPU NVIDIA - Sin compilar, si hay wheel compatible):**
+  Requiere driver NVIDIA. No requiere CUDA Toolkit si el wheel existe.
+  Nota: los wheels CUDA oficiales suelen estar para Python 3.10-3.12 y CUDA 12.1-12.5.
+  `pip install llama-cpp-python --extra-index-url https://abetlen.github.io/llama-cpp-python/whl/cu123 --only-binary llama-cpp-python`
+
+- **Windows (GPU NVIDIA - Compilar desde fuente):**
+  Requiere CUDA Toolkit (nvcc) y Visual Studio Build Tools (C/C++).
+  PowerShell:
+    `$env:CMAKE_ARGS="-DLLAMA_CUDA=on"; pip install llama-cpp-python`
+  Opcional (Ninja):
+    `pip install ninja`
+    `$env:CMAKE_GENERATOR="Ninja"`
+    `$env:CMAKE_ARGS="-DLLAMA_CUDA=on"; pip install llama-cpp-python`
+
+- **Linux/WSL (GPU NVIDIA - Compilar desde fuente):**
+  Requiere CUDA Toolkit.
   `CMAKE_ARGS="-DLLAMA_CUDA=on" pip install llama-cpp-python`
 
-- **macOS (Aceleración Apple Silicon - Metal):**
+- **macOS (Aceleracion Apple Silicon - Metal):**
   `CMAKE_ARGS="-DLLAMA_METAL=on" pip install llama-cpp-python`
+
+**Como verificar CUDA:**
+- Driver (CUDA version del driver): `nvidia-smi`
+- Toolkit (nvcc): `nvcc --version`
+Si `nvcc` no existe, CUDA Toolkit no esta instalado.
 
 #### Motor vLLM (Procesamiento por lotes de alto rendimiento)
 Nota: vLLM requiere un entorno basado en Linux y está optimizado para GPUs NVIDIA o AMD. No es compatible de forma nativa con Windows (requiere WSL2).
@@ -73,6 +92,13 @@ Para iniciar un experimento de medición, configura los parámetros deseados (mo
 
 Los resultados del experimento, incluyendo la precisión de la tarea y el consumo energético (kWh y emisiones de CO2), se guardarán automáticamente en un archivo `.csv` en el directorio raíz.
 
+
+## Token para descargar modelos
+
+Algunos modelos de Hugging face no se pueden descargar sin disponer de una cuenta y un token de autenticacion. En huggingface se debe obtener el token (en modo lectura) y ejecutar el comando:
+  `huggingface-cli login`
+
+Acto seguido pedirá el token que debes pegar. A veces también hay que aceptar los términos y condiciones de uso de los modelos. Eso se hace en la web de huggingface, en la página del modelo.
 ## Notas
 
 Nota sobre el procesamiento de lotes (Batch Processing): > A diferencia de motores orientados a la producción masiva como vLLM o Hugging Face (que aprovechan el paralelismo de la GPU para procesar múltiples secuencias simultáneamente), llama.cpp está optimizado para la baja latencia en entornos de hardware limitado. Por diseño, este motor procesa los elementos del batch de forma secuencial. Esto implica que, aunque el benchmark suministre un lote de tamaño $N$, el motor resolverá cada prompt de uno en uno. Para efectos de este estudio, el consumo energético total ($E$) se mide sobre el tiempo extendido de ejecución del lote completo, permitiendo una comparativa de eficiencia real entre la ejecución de alto rendimiento (throughput) frente a la ejecución ligera y secuencial.
@@ -81,3 +107,6 @@ Nota sobre el procesamiento de lotes (Batch Processing): > A diferencia de motor
 ## Modelos usados
     nombre: TinyLlama/TinyLlama-1.1B-Chat-v1.0 
     gguf: TheBloke/TinyLlama-1.1B-Chat-v1.0-GGUF/tinyllama-1.1b-chat-v1.0.Q8_0.gguf
+
+    nombre: google/gemma-2-2b-it
+    gguf: bartowski/gemma-2-2b-it-GGUF/gemma-2-2b-it-Q8_0.gguf
