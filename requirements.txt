@@ -2,10 +2,11 @@
 transformers>=4.56,<5
 huggingface-hub<1.0
 optimum
-auto-gptq
+autoawq
+gptqmodel
 accelerate>=0.27.0
 sentencepiece>=0.2.0
-
+bitsandbytes
 # necesarios para que vllm funcione
 llguidance
 xgrammar

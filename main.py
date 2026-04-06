@@ -90,15 +90,15 @@ if __name__ == "__main__":
         for tarea in tareas:
             max_tokens = 10 if tarea == "mmlu" else 256
             configuracion_actual = ConfigExperimento(
-                nombre_modelo="Qwen/Qwen2.5-Coder-3B-Instruct-GPTQ-Int8",
-                archivo_gguf="Qwen/Qwen2.5-Coder-3B-Instruct-GGUF/qwen2.5-coder-3b-instruct-q8_0.gguf",
+                nombre_modelo="Qwen/Qwen2.5-3B-Instruct-AWQ",
+                archivo_gguf="bartowski/Qwen2.5-3B-Instruct-GGUF/Qwen2.5-3B-Instruct-IQ4_NL.gguf",
                 hardware="cuda",
                 motor=motor, 
                 nombre_hardware=gpu_actual,
                 tarea=tarea,
                 max_tokens=max_tokens,
                 batch_size=1,
-                cuantizacion=8
+                cuantizacion=True
             )     
             
             print("\n" + "*"*50)
