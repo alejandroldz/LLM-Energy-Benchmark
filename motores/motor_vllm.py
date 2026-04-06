@@ -9,7 +9,35 @@ class MotorVLLM(MotorBase):
     """
     
     def cargar_modelo(self):
-        self.modelo = LLM(model=self.config.nombre_modelo)
+        bits = self.config.cuantizacion
+
+        kwargs_modelo: dict[str, Any] = {
+            "model": self.config.nombre_modelo
+        }
+
+        if bits in (8, 4):
+            kwargs_modelo["quantization"] = "bitsandbytes"
+            kwargs_modelo["dtype"] = "half"
+
+            if bits == 8:
+                kwargs_modelo["enforce_eager"] = True
+                kwargs_modelo["hf_overrides"] = {
+                    "quantization_config": {
+                        "quant_method": "bitsandbytes",
+                        "load_in_8bit": True,
+                        "load_in_4bit": False
+                    }
+                }
+            else:
+                kwargs_modelo["hf_overrides"] = {
+                    "quantization_config": {
+                        "quant_method": "bitsandbytes",
+                        "load_in_8bit": False,
+                        "load_in_4bit": True
+                    }
+                }
+
+        self.modelo = LLM(**kwargs_modelo)
         return self.modelo
 
     def generar_respuesta(self, prompts: list[list[dict[str, str]]], max_tokens: int) -> list[dict[str, Any]]:
@@ -32,4 +60,3 @@ class MotorVLLM(MotorBase):
             })
 
         return resultados   
-

@@ -14,4 +14,4 @@ class ConfigExperimento:
     tarea: str = "humaneval"          # "humaneval", "mmlu", etc.
     max_tokens: int = 256
     batch_size: int = 16
-    cuantizacion: Optional[any] = None
+    cuantizacion: int = 16  # 16, 8 o 4

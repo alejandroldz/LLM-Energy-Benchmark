@@ -1,164 +1,67 @@
 # LLM Energy Benchmark
 
-## Descripción
-Este proyecto es un entorno de pruebas (benchmark) diseñado para evaluar la precisión de generación de código de Modelos de Lenguaje Grande (LLMs) y medir su consumo energético y emisiones de CO2. Integra múltiples motores de inferencia (Hugging Face, vLLM y llama.cpp) y utiliza CodeCarbon para la monitorización de hardware.
+Benchmark para comparar LLMs en tareas de codigo y test (HumanEval, MMLU),
+incluyendo:
+- precision
+- consumo energetico
+- emisiones de CO2
+- latencias y throughput
 
-## Requisitos Previos
-- Python 3.10 o superior.
-- Git.
-- Entorno virtual (recomendado `venv` o `conda`).
+Motores soportados:
+- `hf` (Transformers)
+- `vllm`
+- `llamacpp` (GGUF)
 
-## Instrucciones de Instalación
+## Requisitos
+- Python 3.10-3.12
+- Linux/WSL recomendado para `vllm` y GPU CUDA
+- GPU NVIDIA si quieres cuantizacion `4/8` con bitsandbytes
 
-### 1. Preparación del entorno
-Clona el repositorio y crea un entorno virtual para aislar las dependencias:
-    cd LLM-Energy-Benchmark
-    python -m venv env
+## Instalacion
+En la raiz del repo:
 
-Activa el entorno virtual:
-- En Windows: `.\env\Scripts\activate`
-- En Linux/macOS: `source env/bin/activate`
+```bash
+python -m venv env
+source env/bin/activate
+python -m pip install --upgrade pip setuptools wheel
+pip install -r requirements.txt
+```
 
-### 2. Instalación de PyTorch
-La instalación de PyTorch depende estrictamente de tu sistema operativo y hardware. Selecciona el comando correspondiente a tu máquina:
+## Cuantizacion (nuevo flujo)
+El parametro `config.cuantizacion` acepta:
+- `16`: sin cuantizacion manual (FP16/auto)
+- `8`: bitsandbytes 8-bit
+- `4`: bitsandbytes 4-bit
 
-**Opción A: Windows/Linux con GPU NVIDIA (CUDA 12.1)**
-    pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+Aplicacion por motor:
+- `hf`: cuantizacion 4/8 via `BitsAndBytesConfig`
+- `vllm`: cuantizacion 4/8 via `quantization="bitsandbytes"`
+- `llamacpp`: no cuantiza manualmente; usa el `.gguf` que le pases
 
-**Opción B: Windows/Linux solo con CPU**
-    pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
+Notas:
+- `4` y `8` requieren `hardware="cuda"` para `hf` y `vllm`.
+- Para `llamacpp`, la cuantizacion depende del fichero GGUF elegido.
 
-**Opción C: macOS (Tanto procesadores Intel como Apple Silicon M1/M2/M3)**
-    pip install torch torchvision torchaudio
+## Ejecucion
+Con el entorno activo:
 
-### 3. Instalación de los Motores de Inferencia
-Dependiendo de los experimentos que desees ejecutar, debes instalar las librerías de los motores correspondientes.
+```bash
+python main.py
+```
 
-#### Motor Hugging Face 
-Se instalará junto con las dependencias base en el paso 4.
+## Token de Hugging Face
+Algunos modelos requieren login y licencia:
 
-#### Motor llama.cpp (Modelos GGUF)
-Esta libreria puede usar wheels precompiladas (sin CMake) o compilar desde fuente. Elige segun tu hardware:
+```bash
+huggingface-cli login
+```
 
-- **Windows/Linux/WSL (Solo CPU - Sin compiladores C++):**
-  Usa la version precompilada para evitar errores de CMake.
-  `pip install llama-cpp-python --extra-index-url https://abetlen.github.io/llama-cpp-python/whl/cpu --only-binary llama-cpp-python`
-
-- **Windows/Linux/WSL (GPU NVIDIA - Sin compilar, si hay wheel compatible):**
-  Requiere driver NVIDIA. No requiere CUDA Toolkit si el wheel existe.
-  Nota: los wheels CUDA oficiales suelen estar para Python 3.10-3.12 y CUDA 12.1-12.5.
-  `pip install llama-cpp-python --extra-index-url https://abetlen.github.io/llama-cpp-python/whl/cu123 --only-binary llama-cpp-python`
-
-- **Windows (GPU NVIDIA - Compilar desde fuente):**
-  Requiere CUDA Toolkit (nvcc) y Visual Studio Build Tools (C/C++).
-  PowerShell:
-    `$env:CMAKE_ARGS="-DLLAMA_CUDA=on"; pip install llama-cpp-python`
-  Opcional (Ninja):
-    `pip install ninja`
-    `$env:CMAKE_GENERATOR="Ninja"`
-    `$env:CMAKE_ARGS="-DLLAMA_CUDA=on"; pip install llama-cpp-python`
-
-- **Linux/WSL (GPU NVIDIA - Compilar desde fuente):**
-  Requiere CUDA Toolkit.
-  `CMAKE_ARGS="-DLLAMA_CUDA=on" pip install llama-cpp-python`
-
-- **macOS (Aceleracion Apple Silicon - Metal):**
-  `CMAKE_ARGS="-DLLAMA_METAL=on" pip install llama-cpp-python`
-
-**Como verificar CUDA:**
-- Driver (CUDA version del driver): `nvidia-smi`
-- Toolkit (nvcc): `nvcc --version`
-Si `nvcc` no existe, CUDA Toolkit no esta instalado.
-
-#### Motor vLLM (Procesamiento por lotes de alto rendimiento)
-Nota: vLLM requiere un entorno basado en Linux y está optimizado para GPUs NVIDIA o AMD. No es compatible de forma nativa con Windows (requiere WSL2).
-
-    pip install vllm
-
-Si se quiere ejecutar en MAC es necesario instalarlo con el siguiente comando para aporvechar al máximo las capacidades de la arquitectura:
-    
-    pip install vllm-mlx
-
-### 4. Dependencias Base
-Una vez instalados PyTorch y los motores deseados, instala el resto de dependencias (CodeCarbon, etc.) usando el archivo requirements:
-
-    pip install -r requirements.txt
-
-
-## Uso
-Para iniciar un experimento de medición, configura los parámetros deseados (modelo, hardware, motor, tamaño de lote) en el archivo principal y ejecuta:
-
-    python main.py
-
-Los resultados del experimento, incluyendo la precisión de la tarea y el consumo energético (kWh y emisiones de CO2), se guardarán automáticamente en un archivo `.csv` en el directorio raíz.
-
-
-## Token para descargar modelos
-
-Algunos modelos de Hugging face no se pueden descargar sin disponer de una cuenta y un token de autenticacion. En huggingface se debe obtener el token (en modo lectura) y ejecutar el comando:
-  `huggingface-cli login`
-
-Acto seguido pedirá el token que debes pegar. A veces también hay que aceptar los términos y condiciones de uso de los modelos. Eso se hace en la web de huggingface, en la página del modelo.
-## Notas
-
-Nota sobre el procesamiento de lotes (Batch Processing): > A diferencia de motores orientados a la producción masiva como vLLM o Hugging Face (que aprovechan el paralelismo de la GPU para procesar múltiples secuencias simultáneamente), llama.cpp está optimizado para la baja latencia en entornos de hardware limitado. Por diseño, este motor procesa los elementos del batch de forma secuencial. Esto implica que, aunque el benchmark suministre un lote de tamaño $N$, el motor resolverá cada prompt de uno en uno. Para efectos de este estudio, el consumo energético total ($E$) se mide sobre el tiempo extendido de ejecución del lote completo, permitiendo una comparativa de eficiencia real entre la ejecución de alto rendimiento (throughput) frente a la ejecución ligera y secuencial.
-
-
-## Modelos usados
-  tinyllama
-    f16:
-      nombre: TinyLlama/TinyLlama-1.1B-Chat-v1.0 
-      gguf: andrijdavid/TinyLlama-1.1B-Chat-v1.0-GGUF/TinyLlama-1.1B-Chat-v1.0-f16.gguf
-  qwen
-    f156
-      nombre="Qwen/Qwen2.5-Coder-3B-Instruct",
-      gguf="Qwen/Qwen2.5-Coder-3B-Instruct-GGUF/qwen2.5-coder-3b-instruct-fp16.gguf"
-
-    q8
-
-
-## instalaciones extra
-  pip install optimum
-pip install auto-gptq --extra-index-url https://huggingface.github.io/autogptq-index/whl/cu121/
-
-
-
-Fase 1: Estandarización Absoluta (Controlar el Caos)
-El mayor enemigo de la consistencia en medir energía es la aleatoriedad. Si el modelo A usa 10 tokens para responder y el modelo B usa 50, comparar sus consumos de energía es injusto.
-
-Implementa Constrained Decoding (Generación Guiada): Esta debe ser tu solución estrella. En lugar de usar expresiones regulares después de generar el texto, obliga al motor a nivel interno a generar solo lo que tú quieres.
-
-¿Por qué? Porque evitar que la GPU calcule tokens inútiles (como "¡Hola! Claro, la respuesta es...") es en sí mismo una técnica de Green AI.
-
-Herramientas: Usa outlines o guidance para HuggingFace, el parámetro guided_choice nativo en vLLM, y los archivos Grammar (GBNF) en Llama.cpp.
-
-Congela el Entorno: Usa la misma semilla (Seed), la misma temperatura (Temperature = 0.0 para ser determinista) y desactiva el Sampleo (do_sample=False) en todos los motores.
-
-Fase 2: Calibración Energética (El ancla del mundo real)
-Antes de hacer los exámenes a la IA, tienes que demostrar que tus reglas de medir son exactas.
-
-Auditoría de la Línea Base (Idle): Mide cuánta energía gasta tu ordenador/servidor estando encendido sin hacer nada. Esto se llama Idle Power.
-
-Validación CodeCarbon vs. Vatímetro Físico: Haz un experimento de estrés de 10 minutos (por ejemplo, generar texto sin parar). Compara los Julios totales que te reporta la librería CodeCarbon con los que ha medido tu dispositivo físico (Vampire/Enchufe inteligente).
-
-El valor para el TFG: Si demuestras que CodeCarbon tiene un margen de error del X% respecto al hardware real, estarás aportando un dato valiosísimo a la comunidad científica.
-
-Fase 3: La Batería de Exámenes (El "Benchmark" Justo)
-No intentes correr miles de preguntas. Es mejor correr pocas de forma muy exhaustiva y controlada. Crea un dataset fijo de pruebas:
-
-Conocimiento (MMLU): Selecciona aleatoriamente solo 500 preguntas del MMLU (guardadas en un archivo local para que sea reproducible). Obliga a los modelos a responder solo A, B, C o D mediante Constrained Decoding.
-
-Lógica/Matemáticas (GSM8K): Unos 250 problemas. Obliga a que el modelo devuelva la respuesta final en un formato exacto.
-
-Código (HumanEval): Los 164 problemas estándar. Obliga a que solo devuelva código Python válido.
-
-Fase 4: La Escalera de Experimentos (El núcleo de tus resultados)
-Ahora que tienes tu entorno perfecto y justo, los experimentos deben seguir una progresión lógica para ver qué ahorra más energía sin destruir la inteligencia del modelo. Te recomiendo usar un solo modelo principal (ej. Phi-3.5-mini o Qwen2.5-Coder-3B) y someterlo a esta evolución:
-
-Paso 1: El Baseline (El peor caso). El modelo en precisión completa (FP16), usando HuggingFace estándar, con un batch_size=1.
-
-Paso 2: Optimización de Software. El mismo modelo, pero usando vLLM (para aprovechar PagedAttention) y Llama.cpp. Aquí demostrarás cómo el motor de inferencia reduce la latencia inicial (TTFT) y ahorra energía al evitar calcular padding innecesario.
-
-Paso 3: Optimización de Modelo (Cuantización). Pasa al modelo en formatos INT8 e INT4 (usando GGUF en Llama.cpp o AWQ en vLLM). Aquí verás una caída masiva del consumo (y de la memoria VRAM) a cambio de una bajada muy leve en la nota de los exámenes.
-
-Paso 4: Optimización de Hardware (Power Capping). Toma el mejor resultado del Paso 3, y limita el consumo máximo de la tarjeta gráfica (ej. bajando el límite de vatios con nvidia-smi un 20%). ¿Se vuelve más lento? Sí. ¿Baja drásticamente el coste energético total (Energy-Delay Product)? Eso es lo que demostrarás.
+## Troubleshooting rapido
+- Si falla `llama-cpp-python` por compilacion:
+```bash
+pip install cmake ninja scikit-build-core
+```
+- Si falta `bitsandbytes`:
+```bash
+pip install "bitsandbytes>=0.46.1"
+```

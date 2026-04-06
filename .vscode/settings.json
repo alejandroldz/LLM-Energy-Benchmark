@@ -1,0 +1,35 @@
+{
+  "files.exclude": {
+    "**/.venv-hf-awq": true,
+    "**/.venv-vllm": true,
+    "**/env": true
+  },
+  "files.watcherExclude": {
+    "**/.venv-hf-awq/**": true,
+    "**/.venv-vllm/**": true,
+    "**/env/**": true,
+    "**/__pycache__/**": true,
+    "**/*.egg-info/**": true
+  },
+  "search.exclude": {
+    "**/.venv-hf-awq/**": true,
+    "**/.venv-vllm/**": true,
+    "**/env/**": true,
+    "**/__pycache__/**": true,
+    "**/*.egg-info/**": true
+  },
+  "git.autoRepositoryDetection": "openEditors",
+  "gitlens.codeLens.enabled": false,
+  "gitlens.currentLine.enabled": false,
+  "gitlens.hovers.enabled": false,
+  "python.analysis.indexing": false,
+  "python.analysis.diagnosticMode": "openFilesOnly",
+  "python.analysis.userFileIndexingLimit": 2000,
+  "python.analysis.exclude": [
+    "**/.venv-hf-awq/**",
+    "**/.venv-vllm/**",
+    "**/env/**",
+    "**/__pycache__/**",
+    "**/*.egg-info/**"
+  ]
+}

@@ -1,6 +1,12 @@
 import torch
 import time
-from transformers import AutoTokenizer, AutoModelForCausalLM, LogitsProcessorList, LogitsProcessor
+from transformers import (
+    AutoTokenizer,
+    AutoModelForCausalLM,
+    LogitsProcessorList,
+    LogitsProcessor,
+    BitsAndBytesConfig,
+)
 from motores.motor_base import MotorBase
 from configuraciones.experimentos import ConfigExperimento
 from typing import Any
@@ -30,8 +36,37 @@ class MotorHuggingFace(MotorBase):
     """
     
     def cargar_modelo(self):
+        bits = self.config.cuantizacion
+
         self.tokenizer = AutoTokenizer.from_pretrained(self.config.nombre_modelo)
-        self.modelo = AutoModelForCausalLM.from_pretrained(self.config.nombre_modelo,torch_dtype="auto", device_map=self.config.hardware)
+
+        kwargs_modelo = {
+            "torch_dtype": "auto",
+            "device_map": self.config.hardware
+        }
+
+        if bits in (8, 4):
+            if self.config.hardware != "cuda":
+                raise ValueError(
+                    f"HF + bitsandbytes ({bits} bits) requiere hardware='cuda'."
+                )
+
+            if bits == 8:
+                kwargs_modelo["quantization_config"] = BitsAndBytesConfig(
+                    load_in_8bit=True
+                )
+            else:
+                kwargs_modelo["quantization_config"] = BitsAndBytesConfig(
+                    load_in_4bit=True,
+                    bnb_4bit_quant_type="nf4",
+                    bnb_4bit_compute_dtype=torch.float16,
+                    bnb_4bit_use_double_quant=True,
+                )
+
+        self.modelo = AutoModelForCausalLM.from_pretrained(
+            self.config.nombre_modelo,
+            **kwargs_modelo
+        )
         self.tokenizer.padding_side = "left" #evitamos un warning que sale en algunos modelos
         self.modelo.eval()
         return self.modelo

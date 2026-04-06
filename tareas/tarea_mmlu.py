@@ -11,7 +11,7 @@ class TareaMMLU(TareaBase):
         # Aquí guardaremos las respuestas correctas para corregir el examen luego
         self.datos_reales = []
 
-    def cargar_datos(self, max_por_grupo: int = 50):
+    def cargar_datos(self, max_por_grupo: int = 20):
         print("Descargando dataset MMLU...")
         dataset = load_dataset("cais/mmlu", "all", split="test")
         seed = 0
