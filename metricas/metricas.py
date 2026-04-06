@@ -103,7 +103,8 @@ class Metricas:
             "Throughput Decode (tok/s)": [self.throughput_decode()],
             "Throughput Total (tok/s)": [self.throughput_total()],
             "Inferencia Media (s)": [self.tiempo_inferencia_medio()],
-            "Energía (J/token gen)": [self.julios_por_token_gen()]
+            "Energía (J/token gen)": [self.julios_por_token_gen()],
+            "Cuantizacon": [config.cuantizacion]
         })
 
         archivo_existe = os.path.exists(path)

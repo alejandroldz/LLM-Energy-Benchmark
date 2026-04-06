@@ -1,16 +1,28 @@
-transformers>=4.38.0
+# Core HF / inferencia
+transformers>=4.56,<5
+huggingface-hub<1.0
+optimum
+auto-gptq
 accelerate>=0.27.0
 sentencepiece>=0.2.0
-#necesarios para que vllm funcione
+
+# necesarios para que vllm funcione
 llguidance
 xgrammar
+
 # Medición de energía (Software)
 codecarbon>=2.3.1
-#hardware
+
+# hardware
 nvidia-ml-py
+
 # Evaluación de modelos
 datasets
 human-eval>=0.1.0
-#metricas
+absl-py
+
+# métricas
 pandas>=2.0.0
+numpy<2
+
 -e .

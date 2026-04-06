@@ -105,8 +105,60 @@ Nota sobre el procesamiento de lotes (Batch Processing): > A diferencia de motor
 
 
 ## Modelos usados
-    nombre: TinyLlama/TinyLlama-1.1B-Chat-v1.0 
-    gguf: TheBloke/TinyLlama-1.1B-Chat-v1.0-GGUF/tinyllama-1.1b-chat-v1.0.Q8_0.gguf
+  tinyllama
+    f16:
+      nombre: TinyLlama/TinyLlama-1.1B-Chat-v1.0 
+      gguf: andrijdavid/TinyLlama-1.1B-Chat-v1.0-GGUF/TinyLlama-1.1B-Chat-v1.0-f16.gguf
+  qwen
+    f156
+      nombre="Qwen/Qwen2.5-Coder-3B-Instruct",
+      gguf="Qwen/Qwen2.5-Coder-3B-Instruct-GGUF/qwen2.5-coder-3b-instruct-fp16.gguf"
 
-    nombre: google/gemma-2-2b-it
-    gguf: bartowski/gemma-2-2b-it-GGUF/gemma-2-2b-it-Q8_0.gguf
+    q8
+
+
+## instalaciones extra
+  pip install optimum
+pip install auto-gptq --extra-index-url https://huggingface.github.io/autogptq-index/whl/cu121/
+
+
+
+Fase 1: Estandarización Absoluta (Controlar el Caos)
+El mayor enemigo de la consistencia en medir energía es la aleatoriedad. Si el modelo A usa 10 tokens para responder y el modelo B usa 50, comparar sus consumos de energía es injusto.
+
+Implementa Constrained Decoding (Generación Guiada): Esta debe ser tu solución estrella. En lugar de usar expresiones regulares después de generar el texto, obliga al motor a nivel interno a generar solo lo que tú quieres.
+
+¿Por qué? Porque evitar que la GPU calcule tokens inútiles (como "¡Hola! Claro, la respuesta es...") es en sí mismo una técnica de Green AI.
+
+Herramientas: Usa outlines o guidance para HuggingFace, el parámetro guided_choice nativo en vLLM, y los archivos Grammar (GBNF) en Llama.cpp.
+
+Congela el Entorno: Usa la misma semilla (Seed), la misma temperatura (Temperature = 0.0 para ser determinista) y desactiva el Sampleo (do_sample=False) en todos los motores.
+
+Fase 2: Calibración Energética (El ancla del mundo real)
+Antes de hacer los exámenes a la IA, tienes que demostrar que tus reglas de medir son exactas.
+
+Auditoría de la Línea Base (Idle): Mide cuánta energía gasta tu ordenador/servidor estando encendido sin hacer nada. Esto se llama Idle Power.
+
+Validación CodeCarbon vs. Vatímetro Físico: Haz un experimento de estrés de 10 minutos (por ejemplo, generar texto sin parar). Compara los Julios totales que te reporta la librería CodeCarbon con los que ha medido tu dispositivo físico (Vampire/Enchufe inteligente).
+
+El valor para el TFG: Si demuestras que CodeCarbon tiene un margen de error del X% respecto al hardware real, estarás aportando un dato valiosísimo a la comunidad científica.
+
+Fase 3: La Batería de Exámenes (El "Benchmark" Justo)
+No intentes correr miles de preguntas. Es mejor correr pocas de forma muy exhaustiva y controlada. Crea un dataset fijo de pruebas:
+
+Conocimiento (MMLU): Selecciona aleatoriamente solo 500 preguntas del MMLU (guardadas en un archivo local para que sea reproducible). Obliga a los modelos a responder solo A, B, C o D mediante Constrained Decoding.
+
+Lógica/Matemáticas (GSM8K): Unos 250 problemas. Obliga a que el modelo devuelva la respuesta final en un formato exacto.
+
+Código (HumanEval): Los 164 problemas estándar. Obliga a que solo devuelva código Python válido.
+
+Fase 4: La Escalera de Experimentos (El núcleo de tus resultados)
+Ahora que tienes tu entorno perfecto y justo, los experimentos deben seguir una progresión lógica para ver qué ahorra más energía sin destruir la inteligencia del modelo. Te recomiendo usar un solo modelo principal (ej. Phi-3.5-mini o Qwen2.5-Coder-3B) y someterlo a esta evolución:
+
+Paso 1: El Baseline (El peor caso). El modelo en precisión completa (FP16), usando HuggingFace estándar, con un batch_size=1.
+
+Paso 2: Optimización de Software. El mismo modelo, pero usando vLLM (para aprovechar PagedAttention) y Llama.cpp. Aquí demostrarás cómo el motor de inferencia reduce la latencia inicial (TTFT) y ahorra energía al evitar calcular padding innecesario.
+
+Paso 3: Optimización de Modelo (Cuantización). Pasa al modelo en formatos INT8 e INT4 (usando GGUF en Llama.cpp o AWQ en vLLM). Aquí verás una caída masiva del consumo (y de la memoria VRAM) a cambio de una bajada muy leve en la nota de los exámenes.
+
+Paso 4: Optimización de Hardware (Power Capping). Toma el mejor resultado del Paso 3, y limita el consumo máximo de la tarjeta gráfica (ej. bajando el límite de vatios con nvidia-smi un 20%). ¿Se vuelve más lento? Sí. ¿Baja drásticamente el coste energético total (Energy-Delay Product)? Eso es lo que demostrarás.

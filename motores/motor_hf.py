@@ -30,15 +30,8 @@ class MotorHuggingFace(MotorBase):
     """
     
     def cargar_modelo(self):
-        if self.config.hardware == "cpu":
-            torch_dtype = torch.float32
-        elif self.config.hardware in ("cuda", "mps"):
-            torch_dtype = torch.float16
-        else:
-            raise ValueError(f"Hardware no soportado para HF: {self.config.hardware}")
-
         self.tokenizer = AutoTokenizer.from_pretrained(self.config.nombre_modelo)
-        self.modelo = AutoModelForCausalLM.from_pretrained(self.config.nombre_modelo,torch_dtype=torch_dtype).to(self.config.hardware)
+        self.modelo = AutoModelForCausalLM.from_pretrained(self.config.nombre_modelo,torch_dtype="auto", device_map=self.config.hardware)
         self.tokenizer.padding_side = "left" #evitamos un warning que sale en algunos modelos
         self.modelo.eval()
         return self.modelo

@@ -1,6 +1,7 @@
 from tareas.tarea_base import TareaBase
 from datasets import load_dataset
 import re
+import random
 class TareaMMLU(TareaBase):
     """
     Evaluador para el benchmark MMLU (Massive Multitask Language Understanding).
@@ -10,17 +11,36 @@ class TareaMMLU(TareaBase):
         # Aquí guardaremos las respuestas correctas para corregir el examen luego
         self.datos_reales = []
 
-    def cargar_datos(self):
-        # MMLU es gigante. Para empezar, cargamos una sub-tarea (ej: álgebra).
+    def cargar_datos(self, max_por_grupo: int = 50):
         print("Descargando dataset MMLU...")
         dataset = load_dataset("cais/mmlu", "all", split="test")
-        # Guardamos los datos en la memoria de la clase
-        self.datos_reales = []
-        for i, item in enumerate(dataset):
-            item_dict = dict(item)
-            item_dict["task_id"] = f"MMLU/{i}"
-            self.datos_reales.append(item_dict)
+        seed = 0
+        random.seed(seed)
 
+        # Agrupamos por subject
+        grupos = {}
+
+        for item in dataset:
+            subject = item["subject"]
+            grupos.setdefault(subject, []).append(item)
+
+        self.datos_reales = []
+        contador_global = 0
+
+        for subject, items in grupos.items():
+            # Muestreamos
+            if len(items) > max_por_grupo:
+                seleccion = random.sample(items, max_por_grupo)
+            else:
+                seleccion = items
+
+            for item in seleccion:
+                item_dict = dict(item)
+                item_dict["task_id"] = f"MMLU/{contador_global}"
+                self.datos_reales.append(item_dict)
+                contador_global += 1
+
+        print(f"Total ejemplos tras muestreo: {len(self.datos_reales)}")
         return self.datos_reales
 
     def construir_prompt(self, item):
@@ -42,7 +62,7 @@ class TareaMMLU(TareaBase):
 
         prompt_final = [
             {"role": "system", "content": instruccion_sistema}, 
-            {"role": "user", "content":"Answer the following question. Write just the letter of the correct answer: " + prompt}
+            {"role": "user", "content":"Answer the following question. Write just the letter of the correct answer: " + prompt + "Answer:"}
         ]
         
         return prompt_final

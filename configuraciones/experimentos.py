@@ -12,6 +12,6 @@ class ConfigExperimento:
     nombre_hardware: Optional[str] = None
     motor: str = "hf"                 # "hf", "vllm", "llamacpp"
     tarea: str = "humaneval"          # "humaneval", "mmlu", etc.
-    cuantizacion: Optional[str] = None  # "4bit", "8bit", None
     max_tokens: int = 256
     batch_size: int = 16
+    cuantizacion: Optional[int] = None

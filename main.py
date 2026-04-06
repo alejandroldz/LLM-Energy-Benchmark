@@ -4,6 +4,8 @@ from check_hardware import *
 from configuraciones.experimentos import ConfigExperimento
 from motores.factory import crear_motor
 from tareas.factory import crear_tarea
+import gc 
+import torch
 from metricas.metricas import Metricas
 
 def ejecutar_medicion(config: ConfigExperimento) -> Metricas:
@@ -81,23 +83,40 @@ def ejecutar_medicion(config: ConfigExperimento) -> Metricas:
 
 
 if __name__ == "__main__":
-    gpu_actual = get_gpu_name()     
-    configuracion_actual = ConfigExperimento(
-        nombre_modelo="Qwen/Qwen2.5-Coder-3B-Instruct",
-        archivo_gguf="Qwen/Qwen2.5-Coder-3B-Instruct-GGUF/qwen2.5-coder-3b-instruct-fp16.gguf",
-        hardware="cuda",
-        motor="llamacpp", 
-        nombre_hardware=gpu_actual,
-        tarea="humaneval",
-        max_tokens=128,
-        batch_size=1                  
-    )
+    gpu_actual = get_gpu_name()
+    motores = ["hf"]
+    tareas = ["humaneval", "mmlu"]
+    for motor in motores:
+        for tarea in tareas:
+            max_tokens = 10 if tarea == "mmlu" else 256
+            configuracion_actual = ConfigExperimento(
+                nombre_modelo="Qwen/Qwen2.5-Coder-3B-Instruct-GPTQ-Int8",
+                archivo_gguf="Qwen/Qwen2.5-Coder-3B-Instruct-GGUF/qwen2.5-coder-3b-instruct-q8_0.gguf",
+                hardware="cuda",
+                motor=motor, 
+                nombre_hardware=gpu_actual,
+                tarea=tarea,
+                max_tokens=max_tokens,
+                batch_size=1,
+                cuantizacion=8
+            )     
+            
+            print("\n" + "*"*50)
+            print("CONFIGURACIÓN DEL EXPERIMENTO")
+            print("*"*50)
+            resultados_finales = ejecutar_medicion(configuracion_actual)
+            print("\n" + "*"*50)
+            print("RESULTADOS FINALES DEL EXPERIMENTO")
+            print("*"*50)
+            resultados_finales.imprimir_metricas()
+            path = "resultados.csv"
+            resultados_finales.guardar_csv(configuracion_actual, path)
+
+            gc.collect()
+            
+            # Vacía la caché de la tarjeta gráfica (VRAM)
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
+                torch.cuda.ipc_collect()
+            
     
-    resultados_finales = ejecutar_medicion(configuracion_actual)
-    
-    print("\n" + "*"*50)
-    print("RESULTADOS FINALES DEL EXPERIMENTO")
-    print("*"*50)
-    resultados_finales.imprimir_metricas()
-    path = "resultados.csv"
-    resultados_finales.guardar_csv(configuracion_actual, path)
