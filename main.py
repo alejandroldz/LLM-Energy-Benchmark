@@ -84,14 +84,14 @@ def ejecutar_medicion(config: ConfigExperimento) -> Metricas:
 
 if __name__ == "__main__":
     gpu_actual = get_gpu_name()
-    motores = [ "vllm"]
+    motores = [ "llamacpp"]
     tareas = ["humaneval", "mmlu"]
     for motor in motores:
         for tarea in tareas:
             max_tokens = 10 if tarea == "mmlu" else 256
             configuracion_actual = ConfigExperimento(
-                nombre_modelo="Qwen/Qwen2.5-3B-Instruct-AWQ",
-                archivo_gguf="mradermacher/Qwen2.5-3B-Instruct-GGUF/Qwen2.5-3B-Instruct.IQ4_NL.gguf",
+                nombre_modelo="Qwen/Qwen2.5-3B-Instruct-GGUF/qwen2.5-3b-instruct-q4_k_m",
+                archivo_gguf="Qwen/Qwen2.5-3B-Instruct-GGUF/qwen2.5-3b-instruct-q4_k_m.gguf",
                 hardware="cuda",
                 motor=motor, 
                 nombre_hardware=gpu_actual,
