@@ -9,35 +9,12 @@ class MotorVLLM(MotorBase):
     """
     
     def cargar_modelo(self):
-        bits = self.config.cuantizacion
-
-        kwargs_modelo: dict[str, Any] = {
-            "model": self.config.nombre_modelo
-        }
-
-        if bits in (8, 4):
-            kwargs_modelo["quantization"] = "bitsandbytes"
-            kwargs_modelo["dtype"] = "half"
-
-            if bits == 8:
-                kwargs_modelo["enforce_eager"] = True
-                kwargs_modelo["hf_overrides"] = {
-                    "quantization_config": {
-                        "quant_method": "bitsandbytes",
-                        "load_in_8bit": True,
-                        "load_in_4bit": False
-                    }
-                }
-            else:
-                kwargs_modelo["hf_overrides"] = {
-                    "quantization_config": {
-                        "quant_method": "bitsandbytes",
-                        "load_in_8bit": False,
-                        "load_in_4bit": True
-                    }
-                }
-
-        self.modelo = LLM(**kwargs_modelo)
+        self.modelo = LLM(
+            model=self.config.nombre_modelo, 
+            max_model_len= 1024,
+            gpu_memory_utilization= 0.75,
+            attention_config = {"backend": "TRITON_ATTN"} #mi ordenador tiene una gpu antigua y con configuraciones de atencion mas modernas se bloquea, con esta configuracion se soluciona el problema
+        )
         return self.modelo
 
     def generar_respuesta(self, prompts: list[list[dict[str, str]]], max_tokens: int) -> list[dict[str, Any]]:
@@ -50,8 +27,8 @@ class MotorVLLM(MotorBase):
             tokens_generados = len(output.outputs[0].token_ids)
             tokens_prompt = len(output.prompt_token_ids)
             ttft = 0.0
-            if output.metrics is not None and output.metrics.first_token_latency is not None:
-                ttft = float(output.metrics.first_token_latency)
+            if hasattr(output.metrics, 'first_token_time') and output.metrics.first_token_time is not None:
+                ttft = float(output.metrics.first_token_time - output.metrics.first_scheduled_time)
             resultados.append({
                 "texto": texto_completo,
                 "tokens_prompt": tokens_prompt,

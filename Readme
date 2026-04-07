@@ -15,7 +15,6 @@ Motores soportados:
 ## Requisitos
 - Python 3.10-3.12
 - Linux/WSL recomendado para `vllm` y GPU CUDA
-- GPU NVIDIA si quieres cuantizacion `4/8` con bitsandbytes
 
 ## Instalacion
 En la raiz del repo:
@@ -26,21 +25,6 @@ source env/bin/activate
 python -m pip install --upgrade pip setuptools wheel
 pip install -r requirements.txt
 ```
-
-## Cuantizacion (nuevo flujo)
-El parametro `config.cuantizacion` acepta:
-- `16`: sin cuantizacion manual (FP16/auto)
-- `8`: bitsandbytes 8-bit
-- `4`: bitsandbytes 4-bit
-
-Aplicacion por motor:
-- `hf`: cuantizacion 4/8 via `BitsAndBytesConfig`
-- `vllm`: cuantizacion 4/8 via `quantization="bitsandbytes"`
-- `llamacpp`: no cuantiza manualmente; usa el `.gguf` que le pases
-
-Notas:
-- `4` y `8` requieren `hardware="cuda"` para `hf` y `vllm`.
-- Para `llamacpp`, la cuantizacion depende del fichero GGUF elegido.
 
 ## Ejecucion
 Con el entorno activo:
@@ -56,12 +40,4 @@ Algunos modelos requieren login y licencia:
 huggingface-cli login
 ```
 
-## Troubleshooting rapido
-- Si falla `llama-cpp-python` por compilacion:
-```bash
-pip install cmake ninja scikit-build-core
-```
-- Si falta `bitsandbytes`:
-```bash
-pip install "bitsandbytes>=0.46.1"
-```
+
