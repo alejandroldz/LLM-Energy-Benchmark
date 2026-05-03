@@ -1,0 +1,48 @@
+# LLM Energy Benchmark
+
+Benchmark para comparar LLMs en tareas de distinto tipo (HumanEval, MMLU, IfEval, Resumen),
+incluyendo:
+- precision
+- consumo energetico
+- emisiones de CO2
+- latencias y throughput
+
+Motores soportados:
+- `hf` (Transformers)
+- `vllm`
+- `llamacpp` (GGUF)
+
+## Requisitos
+- Python 3.10-3.12
+- Linux/WSL recomendado para `vllm` y GPU CUDA
+- Para ejecutar llamacpp en gpu nvidia:
+    export PATH=/usr/local/cuda/bin:$PATH
+    export CUDACXX=/usr/local/cuda/bin/nvcc
+    nvcc --version
+    pip uninstall -y llama-cpp-python
+    export CUDACXX=/usr/local/cuda/bin/nvcc
+    export CMAKE_ARGS="-DGGML_CUDA=ON -DCMAKE_CUDA_ARCHITECTURES=native"
+    export FORCE_CMAKE=1
+    pip install --no-cache-dir --force-reinstall llama-cpp-python
+    
+    Dos comprobaciones útiles antes de reinstalar
+    nvcc --version
+    nvidia-smi
+## Instalacion
+En la raiz del repo:
+
+```bash
+python -m venv env
+source env/bin/activate
+python -m pip install --upgrade pip setuptools wheel
+pip install -r requirements.txt
+```
+
+## Ejecucion
+Con el entorno activo:
+
+```bash
+python main.py
+```
+
+
