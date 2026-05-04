@@ -159,9 +159,7 @@ def llamacuantizacion():
     ['Qwen/Qwen2.5-Coder-3B-Instruct-GGUF/qwen2.5-coder-3b-instruct-q8_0.gguf', "q8_0"],
     ['Qwen/Qwen2.5-Coder-3B-Instruct-GGUF/qwen2.5-coder-3b-instruct-q6_k.gguf', "q6_K"],
     ['Qwen/Qwen2.5-Coder-3B-Instruct-GGUF/qwen2.5-coder-3b-instruct-q5_k_m.gguf', "q5_K_M"],
-    ['Qwen/Qwen2.5-Coder-3B-Instruct-GGUF/qwen2.5-coder-3b-instruct-q5_0.gguf', "q5_0"],
     ['Qwen/Qwen2.5-Coder-3B-Instruct-GGUF/qwen2.5-coder-3b-instruct-q4_k_m.gguf', "q4_K_M"],
-    ['Qwen/Qwen2.5-Coder-3B-Instruct-GGUF/qwen2.5-coder-3b-instruct-q4_0.gguf', "q4_0"],
     ['Qwen/Qwen2.5-Coder-3B-Instruct-GGUF/qwen2.5-coder-3b-instruct-q3_k_m.gguf', "q3_K_M"],
     ['Qwen/Qwen2.5-Coder-3B-Instruct-GGUF/qwen2.5-coder-3b-instruct-q2_k.gguf', "q2_K"],
     ["bartowski/google_gemma-4-E2B-it-GGUF/google_gemma-4-E2B-it-bf16.gguf", "f16"],
@@ -169,8 +167,6 @@ def llamacuantizacion():
     ["bartowski/google_gemma-4-E2B-it-GGUF/google_gemma-4-E2B-it-Q6_K.gguf", "q6_K"],
     ["bartowski/google_gemma-4-E2B-it-GGUF/google_gemma-4-E2B-it-Q5_K_M.gguf", "q5_K_M"],
     ["bartowski/google_gemma-4-E2B-it-GGUF/google_gemma-4-E2B-it-Q4_K_M.gguf", "q4_K_M"],
-    ["bartowski/google_gemma-4-E2B-it-GGUF/google_gemma-4-E2B-it-IQ4_XS.gguf", "iq4_xs"],
-    ["bartowski/google_gemma-4-E2B-it-GGUF/google_gemma-4-E2B-it-Q4_0.gguf", "q4_0"],
     ["bartowski/google_gemma-4-E2B-it-GGUF/google_gemma-4-E2B-it-Q3_K_M.gguf", "q3_K_M"],
     ["bartowski/google_gemma-4-E2B-it-GGUF/google_gemma-4-E2B-it-Q2_K.gguf", "q2_K"],
     ["MaziyarPanahi/Mistral-7B-Instruct-v0.3-GGUF/Mistral-7B-Instruct-v0.3.fp16.gguf", "f16"],
@@ -180,8 +176,6 @@ def llamacuantizacion():
     ["MaziyarPanahi/Mistral-7B-Instruct-v0.3-GGUF/Mistral-7B-Instruct-v0.3.Q4_K_M.gguf", "q4_K_M"],
     ["MaziyarPanahi/Mistral-7B-Instruct-v0.3-GGUF/Mistral-7B-Instruct-v0.3.Q3_K_M.gguf", "q3_K_M"],
     ["MaziyarPanahi/Mistral-7B-Instruct-v0.3-GGUF/Mistral-7B-Instruct-v0.3.Q2_K.gguf", "q2_K"],
-    ["MaziyarPanahi/Mistral-7B-Instruct-v0.3-GGUF/Mistral-7B-Instruct-v0.3.IQ4_XS.gguf", "iq4_xs"],
-    ["MaziyarPanahi/Mistral-7B-Instruct-v0.3-GGUF/Mistral-7B-Instruct-v0.3.IQ1_M.gguf", "iq1_m"]
 ]
     
     for motor in motores:
