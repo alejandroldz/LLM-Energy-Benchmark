@@ -101,7 +101,6 @@ class MotorVLLM(MotorBase):
         params = SamplingParams(temperature=0.0, max_tokens=max_tokens)
         outputs = self.modelo.chat(prompts, params)
         resultados = []
-        print("Extrayendo resultados del lote...")
         for output in outputs:
             texto_completo = output.outputs[0].text
             tokens_generados = len(output.outputs[0].token_ids)

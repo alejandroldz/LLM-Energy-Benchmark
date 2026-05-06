@@ -3,13 +3,13 @@ from typing import Any
 
 class TareaBase(ABC):
     """
-    Molde estricto para cualquier benchmark (HumanEval, MMLU, GSM8K...).
+    Base para cualquier benchmark.
     """
 
     @abstractmethod
     def cargar_datos(self) -> list[Any]:
         """
-        Lee el dataset (JSONL, CSV, etc.).
+        Lee el dataset.
         Devuelve una lista con los problemas a resolver.
         """
         pass

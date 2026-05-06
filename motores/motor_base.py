@@ -25,7 +25,7 @@ class MotorBase(ABC):
     def generar_respuesta(self, prompts: list[list[dict[str, str]]], max_tokens: int) -> list[dict[str, Any]]:
         """
         Recibe un texto de entrada y devuelve la predicción.
-        Debe devolver un diccionario con este formato exacto:
+        Debe devolver una lista de diccionarios con este formato exacto:
         {
             "texto": "respuesta del modelo...",
             "tokens_prompt": 150

@@ -14,6 +14,6 @@ class ConfigExperimento:
     tarea: str = "humaneval"          # "humaneval", "mmlu", etc.
     max_tokens: int = 256
     batch_size: int = 16
-    cuantizacion: Optional[str] = None  # None, "fp8", "int8", "fp4", "nf4", "nf4_double"
+    cuantizacion: Optional[str] = None  # None, f16, q8_0..."
     attention_implementation: Optional[str] = None  # "triton", "flash_attention", etc. 
     speculative_decoding: dict = None  # {"method": "draft_model", "model": "Qwen/Qwen2.5-Coder-0.5B-Instruct"} o {"method": "ngram", "model": None}

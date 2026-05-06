@@ -21,7 +21,7 @@ def ejecutar_medicion(config: ConfigExperimento) -> Metricas:
     motor = crear_motor(config)
     tarea = crear_tarea(config)
     
-    # 3. Preparamos el examen
+    # Preparamos el examen
     problemas = tarea.cargar_datos()
     predicciones = []
     n_tokens_generados = 0
@@ -33,12 +33,12 @@ def ejecutar_medicion(config: ConfigExperimento) -> Metricas:
     print("Calentando el modelo (Warm-up)...")
     print(motor.generar_respuesta([[{"role": "user", "content": "Hola, dime tu nombre e información extra"}]], max_tokens=100)[0]["texto"])
     
-    # 4. Activamos codecarbon
+    # Activamos codecarbon
     print("\nIniciando medición de energía...")
     tracker = EmissionsTracker(log_level="error")
     tracker.start()
     
-    # 5. EL BUCLE UNIVERSAL DE GENERACIÓN 
+    # Bucle de generación
     for i in range(0, num_problemas, config.batch_size):
         # Extraemos el lote actual de problemas
         lote_problemas = problemas[i : i + config.batch_size]

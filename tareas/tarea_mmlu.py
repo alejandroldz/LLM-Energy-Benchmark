@@ -5,7 +5,6 @@ import random
 class TareaMMLU(TareaBase):
     """
     Evaluador para el benchmark MMLU (Massive Multitask Language Understanding).
-    Adaptado a nuestra arquitectura modular para mantener el control de los tokens.
     """
     def __init__(self):
         # Aquí guardaremos las respuestas correctas para corregir el examen luego

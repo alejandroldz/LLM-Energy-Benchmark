@@ -52,7 +52,7 @@ class Metricas:
         return self._safe_div(self.tiempo_inferencia, self.num_lotes)
 
     def edp(self):
-        # Energy-Delay Product: Menor es mejor (equilibrio entre rapidez y bajo consumo)
+        # Energy-Delay Product. Menor es mejor (equilibrio entre rapidez y bajo consumo)
         return self.julios_totales() * self.tiempo_inferencia
         
     def edp_por_token(self):
