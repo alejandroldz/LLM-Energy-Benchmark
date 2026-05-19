@@ -3,12 +3,13 @@ import os
 from configuraciones.experimentos import ConfigExperimento 
 
 class Metricas:
-    def __init__(self,energia_kwh,co2_kg,tokens_prompt,tokens_gen,tiempo_inferencia,ttft_total,num_problemas,precision,num_lotes=None,):
+    def __init__(self,energia_kwh,co2_kg,tokens_prompt,tokens_gen,tiempo_inferencia_total,ttft_total,num_problemas,precision,num_lotes=None,):
+        #Estas métricas son TOTALES, no son medias. Es decir, el total de todos los prompts procesados
         self.energia_total_kwh = energia_kwh
         self.co2_total_kg = co2_kg
         self.tokens_prompt = tokens_prompt
         self.tokens_gen = tokens_gen
-        self.tiempo_inferencia = tiempo_inferencia
+        self.tiempo_inferencia_total = tiempo_inferencia_total 
         self.ttft_total = ttft_total
         self.num_problemas = num_problemas
         self.precision = precision
@@ -24,14 +25,9 @@ class Metricas:
         # Energía gastada por cada token que produce el modelo
         return self._safe_div(self.julios_totales(), self.tokens_gen)
 
-    def julios_por_token_total(self):
-        # Energía distribuida entre el contexto procesado y el generado
-        return self._safe_div(self.julios_totales(), (self.tokens_prompt + self.tokens_gen))
-
     def tiempo_decodificacion_total(self):
         # Tiempo inferencia total menos el tiempo gastado en el TTFT
-        return max(0.0, self.tiempo_inferencia - self.ttft_total)
-
+        return max(0.0, self.tiempo_inferencia_total - self.ttft_total)
 
     def tpot(self):
         # Time Per Output Token: La latencia pura de escribir (s/token)
@@ -43,20 +39,17 @@ class Metricas:
     
     def throughput_total(self):
         # Tokens/s globales (incluye lo rápido que se procesó el prompt)
-        return self._safe_div((self.tokens_prompt + self.tokens_gen), self.tiempo_inferencia)
+        return self._safe_div((self.tokens_prompt + self.tokens_gen), self.tiempo_inferencia_total)
 
     def ttft_medio(self):
         return self._safe_div(self.ttft_total, self.num_lotes)
         
     def tiempo_inferencia_medio(self):
-        return self._safe_div(self.tiempo_inferencia, self.num_lotes)
+        return self._safe_div(self.tiempo_inferencia_total, self.num_lotes)
 
     def edp(self):
         # Energy-Delay Product. Menor es mejor (equilibrio entre rapidez y bajo consumo)
-        return self.julios_totales() * self.tiempo_inferencia
-        
-    def edp_por_token(self):
-        return self.julios_por_token_gen() * self.tpot()
+        return self.julios_totales() * self.tiempo_inferencia_total
 
 
     def imprimir_metricas(self):
@@ -69,12 +62,12 @@ class Metricas:
         
         print(f"\nTrabajo del Modelo:")
         print(f"  -Tareas (Prompts): {self.num_problemas} | Lotes: {self.num_lotes} | Precisión: {self.precision:.2f}%")
-        print(f"  -Tokens Contexto (Prefill): {self.tokens_prompt}")
+        print(f"  -Tokens Prompts Prefill: {self.tokens_prompt}")
         print(f"  -Tokens Generados (Decode): {self.tokens_gen}")
         
         print(f"\nTiempos y Latencias (Promedio por lote):")
         print(f"  - TTFT (Latencia inicial): {self.ttft_medio():.4f} s")
-        print(f"  - Tiempo Inferencia Total: {self.tiempo_inferencia_medio():.4f} s")
+        print(f"  - Tiempo Inferencia medio: {self.tiempo_inferencia_medio():.4f} s")
         
         print(f"\nVelocidad (Throughput):")
         print(f"  - TPOT (Latencia de escritura): {self.tpot():.4f} s/token")
