@@ -38,7 +38,7 @@ class MotorVLLM(MotorBase):
             attention_config={"backend": att},
             speculative_config=speculative_config,
             quantization=quantization,
-            # model_loader_extra_config=extra_config
+            model_loader_extra_config=extra_config
 
         )
 

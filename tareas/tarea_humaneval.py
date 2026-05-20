@@ -1,8 +1,6 @@
 from tareas.tarea_base import TareaBase
 from human_eval.data import write_jsonl, read_problems
 from human_eval.evaluation import evaluate_functional_correctness
-import json
-import ast
 import re
 class TareaHumanEval(TareaBase):
     """
@@ -30,7 +28,7 @@ class TareaHumanEval(TareaBase):
             {"role": "system", "content": instruccion_sistema},
             {"role": "user", "content": "def add(a, b):\n    \"\"\"Return the sum of a and b.\"\"\"\n"},
             {"role": "assistant", "content": "    return a + b\n"},
-            {"role": "user", "content": "Complete the following function body. Do not rewrite any additional text, just continue the given code: " + prompt_codigo},
+            {"role": "user", "content": prompt_codigo},
             {"role": "assistant", "content": "  "}
         ]
         

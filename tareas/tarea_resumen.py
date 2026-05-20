@@ -41,13 +41,7 @@ class TareaResumen(TareaBase):
 
         prompt_final = [
             {"role": "system", "content": instruccion_sistema},
-            {
-                "role": "user",
-                "content": (
-                    "Summarize the following text in 2 to 4 sentences:\n\n"
-                    f"{articulo}\n\nSummary:"
-                ),
-            },
+            {"role": "user", "content":  "Summarize the following text in 2 to 4 sentences:\n\n" f"{articulo}\n\nSummary:" }
         ]
         return prompt_final
     

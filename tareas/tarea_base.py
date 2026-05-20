@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Any
+
 
 class TareaBase(ABC):
     """
@@ -7,7 +7,7 @@ class TareaBase(ABC):
     """
 
     @abstractmethod
-    def cargar_datos(self) -> list[Any]:
+    def cargar_datos(self) -> list:
         """
         Lee el dataset.
         Devuelve una lista con los problemas a resolver.
@@ -15,7 +15,7 @@ class TareaBase(ABC):
         pass
 
     @abstractmethod
-    def construir_prompt(self, item: Any):
+    def construir_prompt(self, item):
         """
         Adapta el problema al formato que necesita el LLM.
         Por ejemplo, MMLU necesita inyectar "A), B), C), D)".
