@@ -2,6 +2,7 @@ from tareas.tarea_base import TareaBase
 from datasets import load_dataset
 import re
 import random
+
 class TareaMMLU(TareaBase):
     """
     Evaluador para el benchmark MMLU (Massive Multitask Language Understanding).
@@ -52,7 +53,8 @@ class TareaMMLU(TareaBase):
         prompt = f"{pregunta}\n\n"
         for letra, opcion in zip(letras, opciones):
             prompt += f"{letra}. {opcion}\n"
-            prompt = prompt
+            
+            
         instruccion_sistema = (
             "You are a strict multiple-choice test taker. "
             "Respond ONLY with the single letter of the correct answer (A, B, C, or D). "

@@ -4,7 +4,7 @@ from configuraciones.experimentos import ConfigExperimento
 
 class MotorBase(ABC):
     """
-    Molde para cualquier motor de inferencia (HuggingFace, vLLM, llama.cpp).
+    Molde para cualquier motor de inferencia.
     """
     
     def __init__(self, config: ConfigExperimento):
@@ -28,9 +28,9 @@ class MotorBase(ABC):
         Debe devolver una lista de diccionarios con este formato exacto:
         {
             "texto": "respuesta del modelo...",
-            "tokens_prompt": 150
-            "tokens_generados": 42
-            "ttft": 0.45
+            "tokens_prompt": x
+            "tokens_generados": y
+            "ttft": z
         }
         """
         pass

@@ -12,7 +12,7 @@ class TareaHumanEval(TareaBase):
         return list(problemas.values()) # HumanEval devuelve un diccionario, lo convertimos a lista
 
     def construir_prompt(self, item):
-        prompt_codigo = "Complete the following function body. DO NOT write any additional text, just cotinue the given code. Do NOT add ```python at the beginning or end of the code. Do NOT write in markdown." + item['prompt']
+        prompt_codigo = "Complete the following function body. DO NOT write any additional text, just continue the given code. Do NOT add ```python at the beginning or end of the code. Do NOT write in markdown." + item['prompt']
         
         instruccion_sistema = (
             "You are a strict Python code completion engine. "

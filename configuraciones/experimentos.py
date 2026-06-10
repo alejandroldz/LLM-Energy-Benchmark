@@ -4,7 +4,7 @@ from typing import Optional
 @dataclass
 class ConfigExperimento:
     """
-    Ficha técnica inmutable de lo que vamos a ejecutar.
+    Ficha técnica para configurar un experimento.
     """
     nombre_modelo: str
     archivo_gguf: Optional[str] = None
@@ -15,5 +15,5 @@ class ConfigExperimento:
     max_tokens: int = 256
     batch_size: int = 16
     cuantizacion: Optional[str] = None  # None, f16, q8_0..."
-    attention_implementation: Optional[str] = None  # "triton", "flash_attention", etc. 
+    attention_implementation: Optional[str] = None  # "TRITON", "FLASHATT", "FLASHINFER" etc. 
     speculative_decoding: dict = None  # {"method": "draft_model", "model": "Qwen/Qwen2.5-Coder-0.5B-Instruct"} o {"method": "ngram", "model": None}
