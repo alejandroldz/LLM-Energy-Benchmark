@@ -41,4 +41,4 @@ pip install -r requirements.txt
 ## Ejecucion
 Con el entorno activo:
 Por ahora, para elegir motor, modelo, tarea, etc, se debe definir en el main u otro script que se quiera, un objeto ConfigExperimento con los parámetros necesarios para la ejecución.
-A continuación, se deberá llamar a la función ejecutar_medicion()
+A continuación, se deberá llamar a la función ejecutar_medicion(config: ConfigExperimento) -> Metricas. Con el objeto Metricas que devuelve, se pueden guardar los datos en un csv llamando al método guardar_csv.
